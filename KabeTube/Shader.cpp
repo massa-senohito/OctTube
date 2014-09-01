@@ -25,6 +25,7 @@ GLuint vao(GLuint vbid){
     glBindBuffer(GL_ARRAY_BUFFER, vbid);
     return vao;
 }
+//https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
 //void uniform1(){
 //  glUniform1f(gl
 int createVerShader(){

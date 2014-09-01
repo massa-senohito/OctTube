@@ -5,6 +5,7 @@ class GameAlgolyzm
 {
 public:
   GameAlgolyzm(void);
+  void Render();
   ~GameAlgolyzm(void);
 };
 

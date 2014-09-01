@@ -7,7 +7,7 @@
 #include <functional>
 #define red 0.9f,0.2f,0.2f
 using namespace std;//using string=std::string;
-
+typedef float32 f32;
 struct DeleteObj {
   template <typename T>
   void operator()(const T* ptr) const {
@@ -15,6 +15,7 @@ struct DeleteObj {
     delete ptr;ptr=nullptr;
   }
 };
+void makeFlyBox(float,float);
      //Shapes; 
 //typedef std::basic_istringstream<char> istringstream;
 //using vector<T>=std::vector<T>;
@@ -51,18 +52,26 @@ PDef particleSysDef;
 PSys particleSys;
 World w;
 
-void movableFence(float32 x,float32 y,
-                  float32 sx,float32 sy,
-                  float32 tox,float32){
+void movableFence(f32 x,f32 y,
+                  f32 sx,f32 sy,
+                  f32 tox,f32){
 }
-void PhysicSystem::addFence(float32 x,float32 y,float32 sx,float32 sy){
-  auto b=gcnew Obstable(w,V2(x,y),V2(sx,sy)); //自分をnewしたときにlistにいれて、delFencesの時に削除するので
+void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
+  auto b=gcnew Obstacle(w,V2(x,y),V2(sx,sy)); //自分をnewしたときにlistにいれて、delFencesの時に削除するので
   //obs->push_back(b);
   obs->Add(b);
 }
-
-void delExactObstacle(Obstable^ b){
-  w->DestroyBody(b->GetBody());
+//#define EneMap std::map<Enemy^,bool>
+//EneMap* enemyLiving;
+Enemy^ PhysicSystem::addEnemy(f32 x,f32 y,f32 rad){
+  auto e=gcnew Enemy(w,V2(x,y),rad);
+  ens->Add(e);
+  //auto em=enemyLiving->emplace(e,true);
+  //em.first
+  return e;
+}
+void delExactObstacle(Obstacle^ b){
+  //w->DestroyBody(b->GetBody());
   //b->Dispose();
   delete b;
 }
@@ -70,7 +79,7 @@ void PhysicSystem::delFences(){
   //std::for_each(obs->begin(),obs->end(),DeleteObj());
   //fenceだけ消すために、delExactObstacleの前にディスパッチが必要
   //std::for_each(obs->begin(),obs->end(),delExactObstacle);
-  for each (Obstable^ var in obs)
+  for each (Obstacle^ var in obs)
   {
     delExactObstacle(var);
   }
@@ -91,6 +100,18 @@ DebugDraw* dd;
 
 auto downGrav=-9.8f;
 b2Vec2 grav(0.0,9.8f);
+void PhysicSystem::makeOuterFence(int x,int y){
+  //sizeのせいで外にはみ出す可能性がある
+  auto f1= gcnew Obstacle(w,V2(x/2.f, 0.f), V2(1.f, y));
+  auto f2= gcnew Obstacle(w,V2(-x/2.f, 0.f), V2(1.f, y));
+  auto f3= gcnew Obstacle(w,V2(0.f, y/2.f), V2(x - 1.f, 1.f));
+  auto f4= gcnew Obstacle(w,V2(0.f, -y/2.f), V2(x - 1.f, 1.f));
+  obs->Add(f1);
+  obs->Add(f2);
+  obs->Add(f3);
+  obs->Add(f4);
+}
+
 PhysicSystem::PhysicSystem(void)
 {
   string csv("a,b");
@@ -120,6 +141,10 @@ PhysicSystem::PhysicSystem(void)
   w->SetDebugDraw(dd);
   //w->S
   obs=gcnew Obs;
+  makeOuterFence(73,53);
+  ens=gcnew Ens;
+  //dictionary検討か
+  //enemyLiving=new EneMap();
 }
 inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   auto shape=new b2PolygonShape();
@@ -144,7 +169,7 @@ void makeFlyBox(float x,float y){
   d->userData;
   d->position=V2(x,y);
   d->type=b2_dynamicBody;
-  d->linearVelocity;
+  d->linearVelocity=V2(-16,11);
   auto body=w->CreateBody(d);
   auto fix=new b2FixtureDef();
   fix->shape;
@@ -159,19 +184,19 @@ void makeFlyFish(){
   //makeFlyBox(-12,12).Joint();
 }
 void makeSinglePar(float x,float y,float vx,float vy){
-    b2ParticleDef d;
-    b2ParticleColor bc(0,0,1,1);
-    d.color=bc;
-    d.velocity=V2(vx,vy);
-    d.position=V2(x,y);
-    d.flags=b2_tensileParticle;
-    auto par=particleSys->CreateParticle(d);
+  b2ParticleDef d;
+  b2ParticleColor bc(0,0,1,1);
+  d.color=bc;
+  d.velocity=V2(vx,vy);
+  d.position=V2(x,y);
+  d.flags=b2_tensileParticle;
+  auto par=particleSys->CreateParticle(d);
 }
 //パーティクルを継承した KomeParticle , StreamParticle 
 //StreamParticleは水のパーティクルグループ、
 //rigidparticle=崩れないパーティクルグループ
 int PhysicSystem::MakeParticle(float x,float y){
-    makeParticle(x,y);
+  makeParticle(x,y);
   //pg-> rigidparticle でないとPositionとっても意味のない座標になる（たぶん重心が出るが、GetCenterあるのでそっちを）
   return 0;//pg->GetParticleCount();
 }
@@ -185,12 +210,34 @@ void step(){
   float hz=60.f;
   int32 pi=b2CalculateParticleIterations(grav.y,0.06f,1/hz);
   w->Step(1/hz,8,3,pi);
-  
+
+  auto fpart=w->GetParticleSystemList()->GetPositionBuffer();
+
+  for (auto bod=w->GetBodyList();bod!=nullptr;bod=bod->GetNext()){
+    auto ud=bod->GetUserData();
+    if(ud){
+      //userdataならビット演算で区別するのが
+      auto p=bod->GetPosition();
+      auto dist=p-(*fpart);
+//      int siz=1;
+//      glRecti(-siz,-siz,siz,siz);
+
+      
+    }
+    //かべの描画　まあ継承でDraw呼ぶのが妥当か
+    //bod->GetFixtureList()
+  }
   w->DrawDebugData();
 }
 
 ///ワールドをステップさせ、同時に描画します
 void PhysicSystem::Step(){
+  for each (Enemy^ var in ens)
+  {
+    var->Update();
+    //列挙中に消えるとめんどくさいのでmap<,bool>
+    //if(var)
+  }
   step();
 }
 PhysicSystem::~PhysicSystem(){
@@ -199,6 +246,16 @@ PhysicSystem::~PhysicSystem(){
   dd=nullptr;
   delFences();
   delete obs;
+  obs=nullptr;
+  //vectorにしたかったがマネージ型はlistに放り込めない
+  for (int i = 0; i < ens->Count; i++)
+  {
+    delete ens[i];
+  }
+  ens->Clear();
+  delete ens;
+  ens=nullptr;
+
   w->DestroyParticleSystem(particleSys);
   particleSys=nullptr;
   //http://oshiro.bpe.es.osaka-u.ac.jp/people/staff/imura/computer/OpenGL/framebuffer_object/disp_content

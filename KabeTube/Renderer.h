@@ -8,9 +8,10 @@ public:
 
     Renderer(Callback);
     GLenum renderPolygon(GLvoid* vert,int length);
+    // V2 pos,float scale,float angle
     ~Renderer(void);
 };
-
+//https://github.com/assimp/assimp/blob/master/samples/SimpleOpenGL/Sample_SimpleOpenGL.c
 namespace Key{
 enum  Key{
   Up,Down,Left,Right,A,Length

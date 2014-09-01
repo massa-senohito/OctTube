@@ -30,7 +30,7 @@ typedef float float32;
 typedef const char* string;
 float32 radius=0;//2
 float32 pradius=0.1f;
-const float32 pi=3.141592;
+const float32 pi=3.141592f;
 
 void setMask(GLint ref);
 void setPoly(GLint ref);
@@ -99,7 +99,7 @@ void createBParticle(float32 x,float32 y,float32 pr){
   glEnd();
 }
 void createBallon(float32 radius,float32 pradius,float32 x,float32 y){
-  if (pradius<0.3){pradius=0.31;}
+  if (pradius<0.3f){pradius=0.31f;}
   float32 hpr=pradius/2;
   float32 rad=pi-2*acos(hpr/radius);
   float32 radc=rad;
@@ -258,7 +258,7 @@ void display()
   //glMatrixModeはMODELVIEW行列にしている
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  static int wid=320/6;static int hei=240/6;
+  static float wid=320/6;static float hei=240/6;
   glOrtho(-wid,wid,-hei,hei,-50,50);
   
   glMatrixMode(GL_MODELVIEW);
@@ -309,7 +309,7 @@ void onDrag(int x,int y){
 //void 
 void specialkey(int key,int x,int y){
 
-  float32 del=0.01;//todo GLCTestと同じ使用にする
+  float32 del=0.01f;//todo GLCTestと同じ使用にする
   if(key==GLUT_KEY_UP){ //radius+=del;
     Key::pushed[Key::Up]=true;
     Key::lastPushed[Key::Up]=count;

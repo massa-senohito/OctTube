@@ -63,15 +63,15 @@ Texture::Texture(void)
 void inline bind2d(GLuint n){
     glBindTexture(GL_TEXTURE_2D,n);
 }
-#define bai 0.9
+#define bai 0.9f
 void ver2(float x,float y){
     glVertex3f(x*bai,y*bai,0);
 }
 void setBlue(){
-    glColor3f(0.2,0.1,0.6);
+    glColor3f(0.2f,0.1f,0.6f);
 }
 void setWhite (){
-    glColor3f(0.9,0.9,1.0);
+    glColor3f(0.9f,0.9f,1.0f);
 }
 void regacyGLTex(float* vs,GLuint texName){
     float x=vs[0]   ;float y=vs[1];

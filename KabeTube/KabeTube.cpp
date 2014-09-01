@@ -11,7 +11,7 @@ using namespace System::IO;
 //createRice //粘着する
 //createLiquid //水
 //csvで係数指定
-
+Points svgRead();
 
 //とりあえずの設計
 //class Particle{
@@ -61,7 +61,7 @@ using namespace System::IO;
 //using Ast=array<String^>^;
 char* toCp(String^ i){
     char* tmp=new char[32];
-    sprintf(tmp,"%s",i);
+    //sprintf(tmp,"%s",i);
   return tmp;
 }//あまどいのなかをぬけていく
 char** strMap(array<String^> ^item){
@@ -75,9 +75,7 @@ char** strMap(array<String^> ^item){
     ;//(char*)malloc(len*sizeof(char*)*32);
     for (int i = 0; i < len; i++)
     {
-        //tmp[i]=item[i]->ToCharArray()->;
-        sprintf(tmp[i],"%s",item[i]);
-	//tmp[i]=
+        //sprintf(tmp[i],"%s",item[i]);
     }
     return tmp;
 }
@@ -98,7 +96,35 @@ void makeDragon(PhysicSystem^ sys,array<String^>^ coes ){
   if(pat=="vmove"){
     
   }
-
+  //-16,11でとばす
+  auto enemy=sys->addEnemy(-32,0,1);;
+  enemy->Impulse(V2(6,11));
+  enemy->SetPoints(svgRead());
+}
+#define Path SvgFs::Loader::Path 
+using namespace SvgFs;
+Points svgRead(){
+  /*  M始点 C 点 前の点　コントロールポイント 次の点
+  M 93.00,37.00
+  C 93.00,37.00 80.00,65.00 59.00,72.00
+    59.00,72.00 84.00,109.00 71.00,125.00
+    71.00,125.00 87.00,152.00 114.00,122.00
+    102.00,97.00 130.00,74.00 130.00,74.00
+    112.00,71.00 93.00,37.00 93.00,37.00 Z
+  M 79.00,143.00
+  C 79.00,143.00 66.00,175.00 66.00,175.00M 110.00,141.00
+  C 110.00,141.00 118.00,179.00 118.00,179.00M 94.00,146.00
+  C 94.00,146.00 94.00,181.00 94.00,181.00
+  */
+  auto fi=Loader::openGimpPath("squid.svg");
+  auto anim=Loader::anim(fi,0);//たしかにfs側でbyte[][]吐き出せば静的に焼きこんだアニメーション作れる
+  auto ps=Loader::pathToPointsLis(anim,0.2f);
+  int c=ps->Length;
+  for (int i = 0; i < c; i++)
+  {
+    //ps[i]->
+  }
+  return ps;
 }
 void fileRead(System::String^ filename,PhysicSystem^ sys){
   auto fi=File::ReadAllLines(filename);
@@ -108,38 +134,64 @@ void fileRead(System::String^ filename,PhysicSystem^ sys){
    auto coefar=fi[i]->Split(',');
    String^ name=coefar[0]; 
    if(name=="Cube"){
-    float x=strTofloat(coefar[1]);
-    auto y=strTofloat(coefar[2]);
-    auto z=strTofloat(coefar[3]);
-    auto sx=strTofloat(coefar[4]);
-    auto sy=strTofloat(coefar[5]);
-    auto sz=strTofloat(coefar[6]);
-	//fence(x,y,z,sx,sy,sz,0.0f);
-    sys->addFence(x,y,sx,sy);
+     float x = strTofloat(coefar[1]);
+     auto  y = strTofloat(coefar[2]);
+     auto  z = strTofloat(coefar[3]);
+     auto  sx= strTofloat(coefar[4]);
+     auto  sy= strTofloat(coefar[5]);
+     auto  sz= strTofloat(coefar[6]);
+ 	//fence(x,y,z,sx,sy,sz,0.0f);
+     sys->addFence(x,y,sx,sy);
    }
-   else if(name=="dragonbody"){
-	   makeDragon(sys,coefar);
+   if(name=="dragonbody"){
+     makeDragon(sys,coefar);
+   }
+   if(name=="fish"){
    }
   }
 }
 #define TEXSIZE 64
 GLuint texName;
-
+GLint es[]={
+  GL_LINES,
+  GL_LINE_STRIP,
+  GL_TRIANGLES,
+  GL_TRIANGLE_STRIP,
+  GL_TRIANGLE_FAN,
+  GL_QUADS,
+  GL_QUAD_STRIP,
+  GL_POLYGON,
+  -1
+};
+int ei=0;
 void disp( void ) {
-	glClear(GL_COLOR_BUFFER_BIT);
-float nine =0.9;
-	glBegin(GL_QUADS);
-		glColor3ub(0xFF , 0 , 0);
-		glVertex2f(-nine , -nine);
-		glColor3f(0 , 0 , 1);
-		glVertex2f(-nine , nine);
-		glVertex2f(nine , nine);
-		glColor3b(127 , 0 , 0);
-		glVertex2f(nine , -nine);
-	glEnd();
-    glFlush();
+  glClear(GL_COLOR_BUFFER_BIT);
+  static auto ps=svgRead();
+  float nine =0.9f;
+  glBegin(es[ei]);
+  /*
+   	glColor3ub(0xFF , 0 , 0);
+   	glVertex2f(-nine , -nine);
+   	glColor3f(0 , 0 , 1);
+   	glVertex2f(-nine , nine);
+   	glVertex2f(nine , nine);
+	glColor3b(127 , 0 , 0);
+        glVertex2f(nine , -nine);
+  */
+  float32 scale=1.0f/150.0f;
+  glScalef(scale,scale,0);
+  int pl=ps->Length;
+  for (int i = 0; i < pl; i+=2)
+  {
+    glVertex2f( ps[i]-59,ps[i+1]-37);
+  }  
+  glEnd();
+  glFlush();
 }
-
+void key(int key,int,int){
+  ei++;
+  if(es[ei]==-1)ei=0;
+}
 void timert(int value) {
 	//glRotatef(1 , 0.5 , 1 , 0.25);
 	glutPostRedisplay();
@@ -165,7 +217,7 @@ int texTest(int argc , char ** argv){
   glutCreateWindow("Kitty on your lap");
   glutDisplayFunc(disp);
   glutTimerFunc(100 , timert , 0);
-
+  glutSpecialFunc(key);
   glEnable(GL_TEXTURE_2D);
   glGenTextures(1 , &texName);
   glBindTexture(GL_TEXTURE_2D , texName);
@@ -182,8 +234,10 @@ int texTest(int argc , char ** argv){
 ///最後に撃った時のフレーム
 int lastFiredFrame=int(0);
 float angle=float(270);
-#define pos 0.5,0.4
+#define pos 0.5f,0.4f
 //timeは17ミリ秒ごとにカウント
+//void drawFish(
+
 void onRenderFrame(int time){
   int movableF=2;
   float power=18;
@@ -191,7 +245,7 @@ void onRenderFrame(int time){
   step();
 
   drawClothHair(angle);
-  std::cout << angle << std::endl;
+  //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
     if(time-lastFiredFrame>10){
       float vx=cos(toRad(angle));
@@ -213,22 +267,24 @@ void onRenderFrame(int time){
 }
 void kabeMain(array<System::String ^> ^args){
     array<String^> ^ar={"av","as",""};
+    svgRead();
     auto sys=gcnew PhysicSystem();
     sys->MakeParticle(pos);
     char ** arg= strMap(args);//opentkだと？
     GLUT_INITs((args->Length) ,arg);
     ///drawable,steppable作るべき
     fileRead("coe.csv",sys);
-
-    Renderer rend(onRenderFrame
+    Renderer rend([](int count){
+      onRenderFrame(count);
+    }
     );
     //char* c=toCp(ar[0]);
     //auto g=new GUIUtil();
     //splitTest();
-    Console::WriteLine(arg[0]);
+    //Trueになる
+    //Console::WriteLine(arg[0]);
     std::cout << (arg[0])<< std::endl;;
     rend.renderPolygon(nullptr,0);
-    Console::WriteLine(arg[2]);
     glutMainLoop();
     delete[] arg;
     Console::Read();
@@ -237,8 +293,8 @@ int main(array<System::String ^> ^args)
 {
     //auto i=args[0];
     //auto c=args->Count;
-    //texTest(0,nullptr);
-    kabeMain(args);
+    texTest(0,nullptr);
+    //kabeMain(args);
     return 0;
 
 }

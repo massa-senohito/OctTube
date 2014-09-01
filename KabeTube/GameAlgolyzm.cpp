@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
 
-float toRad(float ang){return ang/180*3.141592;}
+float toRad(float ang){return ang/180*3.141592f;}
 void drawClothHair(float angle){
   float radius=6;
   
@@ -12,8 +12,33 @@ void drawClothHair(float angle){
 GameAlgolyzm::GameAlgolyzm(void)
 {
 }
+bool 
+  isAllMeatFired ()//ms=
+  {
+    int length=0;//
+    
+    for (int i = 0; i < length; i++)
+    {
+      return false;
+    }
+    return true;
+}
+///ƒNƒŠƒA•X‰Ù
+float howAllMeatFired()// ms
+{
+  return 1;
+}
+void GameAlgolyzm::
+  Render()
+{
+  int length=0;//w.ParCount
+  //auto pb=w.PartiPosBuf()
+  for (int i = 0; i < length; i++)
+  {
+    //setMask(i%3*2+1
 
-
+  }
+}
 GameAlgolyzm::~GameAlgolyzm(void)
 {
 }
