@@ -1755,12 +1755,7 @@ void stencil(GLint ref){
     glStencilFunc(GL_GREATER,ref,mask);//OŠp‚Ì‚ÆFX‚¹‚é‚Ì‚ğì‚ë‚¤
 }
   GLuint alwaysmask=0xFF;
-//let setMask i=
-//  glStencilOp(Incl); //‚Ç‚Ì¸”s‚É‚à‘‚â‚·
-//  glStencilNever(); //
-//let setPoly i=
-//  glStencilOp(Keep);
-//  glStencilGle();//‘‚â‚³‚ê‚Ä‚¢‚é‚Æ‚±‚ë‚¾‚¯•`‰æ
+
 
 
 //drawSprite() 

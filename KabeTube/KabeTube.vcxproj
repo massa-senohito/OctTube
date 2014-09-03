@@ -15,6 +15,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>KabeTube</RootNamespace>
+    <ProjectName>OctTube</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -112,7 +113,7 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameAlgolyzm.cpp" />
     <ClCompile Include="GUIUtil.cpp" />
-    <ClCompile Include="KabeTube.cpp" />
+    <ClCompile Include="OctTube.cpp" />
     <ClCompile Include="Movable.cpp" />
     <ClCompile Include="MyContactFilter.cpp" />
     <ClCompile Include="Obstacle.cpp" />
