@@ -17,27 +17,6 @@ struct DeleteObj {
 };
 void makeFlyBox(float,float);
      //Shapes; 
-//typedef std::basic_istringstream<char> istringstream;
-//using vector<T>=std::vector<T>;
-//パースしたデータはランダムアクセスで拾うのでvectorでいいや
-//http://shnya.jp/blog/?p=195
-std::vector<string> split(const string &str, char delim){
-  istringstream iss(str); string tmp; std::vector<string> res;
-  while(getline(iss, tmp, delim)) res.push_back(tmp);
-  return res;
-}
-void splitTest(){
-  auto ls=split("a,s,d,1,2,34,12",',');
-  //for(string a=ls.
-  std::cout << ls[2] << std::endl;
-  std::cout << ls[4] << std::endl;
-  std::cout << ls[6] << std::endl;
-
-}
-//float parse(System::String^ te){
-//  //めんどいのでドトネトで
-//  return System::Convert::ToSingle(te);
-//}
 
 //void loadStage(PhysicSystem^ p ){
 //  //auto test=split("0.1,2.2,11.0,9.3,2.5,9.9",',');
@@ -55,6 +34,7 @@ World w;
 void movableFence(f32 x,f32 y,
                   f32 sx,f32 sy,
                   f32 tox,f32){
+  
 }
 void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
   auto b=gcnew Obstacle(w,V2(x,y),V2(sx,sy)); //自分をnewしたときにlistにいれて、delFencesの時に削除するので
@@ -63,14 +43,14 @@ void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
 }
 //#define EneMap std::map<Enemy^,bool>
 //EneMap* enemyLiving;
-Enemy^ PhysicSystem::addEnemy(f32 x,f32 y,f32 rad){
+PEnemy PhysicSystem::addEnemy(f32 x,f32 y,f32 rad){
   auto e=gcnew Enemy(w,V2(x,y),rad);
   ens->Add(e);
   //auto em=enemyLiving->emplace(e,true);
   //em.first
   return e;
 }
-void delExactObstacle(Obstacle^ b){
+void delExactObstacle(PObstacle b){
   //w->DestroyBody(b->GetBody());
   //b->Dispose();
   delete b;
@@ -78,11 +58,16 @@ void delExactObstacle(Obstacle^ b){
 void PhysicSystem::delFences(){
   //std::for_each(obs->begin(),obs->end(),DeleteObj());
   //fenceだけ消すために、delExactObstacleの前にディスパッチが必要
-  //std::for_each(obs->begin(),obs->end(),delExactObstacle);
-  for each (Obstacle^ var in obs)
+
+#ifdef _MANAGED
+  for each (PObstacle var in obs)
   {
     delExactObstacle(var);
   }
+#else
+  std::vector<PObstacle>::iterator d = obs->Data->begin();
+  std::for_each(d,obs->Data->end(),delExactObstacle);
+#endif
   obs->Clear();
 }
 void eachParticle(){
@@ -140,9 +125,9 @@ PhysicSystem::PhysicSystem(void)
   dd->SetFlags(b2Draw::e_particleBit|b2Draw::e_shapeBit);
   w->SetDebugDraw(dd);
   //w->S
-  obs=gcnew Obs;
+  obs=gcnew Obss;
   makeOuterFence(73,53);
-  ens=gcnew Ens;
+  ens=gcnew Enes;
   //dictionary検討か
   //enemyLiving=new EneMap();
 }
@@ -232,12 +217,17 @@ void step(){
 
 ///ワールドをステップさせ、同時に描画します
 void PhysicSystem::Step(){
-  for each (Enemy^ var in ens)
+
+#ifdef _MANAGED
+  for each (PEnemy var in ens)
   {
     var->Update();
     //列挙中に消えるとめんどくさいのでmap<,bool>
     //if(var)
   }
+#else
+  std::for_each(ens->Data->begin(), ens->Data->end(), [](PEnemy i){i->Update(); });
+#endif
   step();
 }
 PhysicSystem::~PhysicSystem(){
@@ -248,10 +238,11 @@ PhysicSystem::~PhysicSystem(){
   delete obs;
   obs=nullptr;
   //vectorにしたかったがマネージ型はlistに放り込めない
-  for (int i = 0; i < ens->Count; i++)
-  {
-    delete ens[i];
-  }
+  //リークするかもしれないがとりあえず
+  //for (int i = 0; i < ens->Count; i++)
+  //{
+  //  delete ens[i];
+  //}
   ens->Clear();
   delete ens;
   ens=nullptr;

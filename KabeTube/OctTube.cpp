@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
+#include "Renderer.h"
 //#include "Box2D/Box2D.h"
 //using namespace System::Linq;
 //createRice //粘着する
@@ -54,13 +55,16 @@
 
 //invalid
 //using Ast=array<String^>^;
-char* toCp(String^ i){
+char* toCp(String i){
     char* tmp=new char[32];
     //sprintf(tmp,"%s",i);
   return tmp;
 }//あまどいのなかをぬけていく
-char** strMap(array<String^> ^item){
-    int len=item->Length; //マクロでもムリだわ
+char** strMap(stringArray item){
+	int len = 0;
+#ifdef _MANAGED
+        len=item->Length; //マクロでもムリだわ
+#endif
     char** tmp=new char*[3];
     
     tmp[0]=new char[32];
@@ -94,9 +98,10 @@ GLint es[]={
 int ei=0;
 void disp( void ) {
   glClear(GL_COLOR_BUFFER_BIT);
-  static auto ps=svgRead();
+  static auto squid = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
+  static auto ps=svgRead(squid);
   float nine =0.9f;
-  glBegin(es[ei]);
+  float scale=1.0f/150.0f;
   /*
    	glColor3ub(0xFF , 0 , 0);
    	glVertex2f(-nine , -nine);
@@ -106,13 +111,9 @@ void disp( void ) {
 	glColor3b(127 , 0 , 0);
         glVertex2f(nine , -nine);
   */
-  float scale=1.0f/150.0f;
   glScalef(scale,scale,0);
-  int pl=ps->Length;
-  for (int i = 0; i < pl; i+=2)
-  {
-    glVertex2f( ps[i]-59,ps[i+1]-37);
-  }  
+  glBegin(es[ei]);
+  renderVertice(ps,Assets::squidPLen());
   glEnd();
   glFlush();
 }
@@ -159,21 +160,31 @@ int texTest(int argc , char ** argv){
   return 0;
 }
 
-void kabeMain(array<System::String ^> ^args){
-  new GameAlgolyzm(args);
+void kabeMain(const char* args){
+  new GameAlgolyzm(Vector<std::string>());
 }
-int main(array<System::String ^> ^args)
+int main(char* args[])
 {
   try{
-    //auto i=args[0];
-    //auto c=args->Count;
     //texTest(0,nullptr);
-    kabeMain(args);
-  }catch(System::IO::FileLoadException^ e){
+    kabeMain("");
+  }catch
+#ifdef _MANAGED
+    (System::IO::FileLoadException^ e){
     auto ex=e;
   }
   finally{
     
   }
+#else
+  (std::exception e){
+  }
+#endif
   return 0;
+}
+
+int _tmain(int argc, char* argv[])
+{
+  kabeMain("");
+	return 0;
 }

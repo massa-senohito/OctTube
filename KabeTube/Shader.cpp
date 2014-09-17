@@ -51,8 +51,8 @@ void loadProg(const GLchar* file,GLuint id){
   int ret;
   
   /* ファイルを開く */
-  fp = fopen(file, "rb");
-  if (fp == NULL) {
+  errno_t e = fopen_s(&fp,file, "rb");
+  if (e != NOERROR) {
     perror(file);
     return ;
   }

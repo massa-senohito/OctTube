@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,14 +21,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>solid.lib;liquidfun.lib;glew32.lib;freeglut_staticd.lib;glui.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>solid.lib;liquidfun.lib;glew32.lib;freeglut_staticd.lib;glui32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>C:\Users\massa_senohito\Downloads\solid-3.5.7\VisualC6\solid\Debug;C:\Users\massa_senohito\Documents\Visual Studio 11\Projects\KabeTube\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -94,7 +94,6 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameAlgolyzm.h" />
     <ClInclude Include="GUIUtil.h" />
-    <ClInclude Include="Movable.h" />
     <ClInclude Include="MyContactFilter.h" />
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="PhysicSystem.h" />
@@ -114,7 +113,6 @@
     <ClCompile Include="GameAlgolyzm.cpp" />
     <ClCompile Include="GUIUtil.cpp" />
     <ClCompile Include="OctTube.cpp" />
-    <ClCompile Include="Movable.cpp" />
     <ClCompile Include="MyContactFilter.cpp" />
     <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="PhysicSystem.cpp" />

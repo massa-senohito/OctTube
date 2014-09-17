@@ -42,14 +42,20 @@ void debugCall(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 }
 
 void setConsoleColorYellow(){
-   //printf("\x1b[33m"); 
+#ifdef _MANAGED
    auto ye=System::ConsoleColor::Yellow;
    System::Console::ForegroundColor=ye;
+#else
+   printf("\x1b[33m"); 
+#endif
 }
  //printf("\x1b[41m");//red
 void  setConsoleColorDef(){
-  //printf("\x1b[0m");
-    System::Console::ResetColor();
+#ifdef _MANAGED
+  System::Console::ResetColor();
+#else
+  printf("\x1b[0m");
+#endif
 }
 void loopEnd(){
     setConsoleColorYellow();
@@ -344,6 +350,23 @@ void SpecialKeyUp(int key,int,int){
       Key::pushed[Key::Right]=false;
   if(key==GLUT_KEY_CTRL_L) 
       Key::pushed[Key::A]=false;
+}
+void renderVertice(Points ps,int len){
+#ifdef _MANAGED
+  int pl=ps->Length;
+#else
+  int pl=len;
+#endif
+  for (int i = 0; i < pl; i+=2)
+  {
+#ifdef _MANAGED
+    int psi = ps[i];
+#else
+    auto psi = ps[i];
+    auto psi1 = ps[i+1];
+#endif
+    glVertex2f( psi-59,psi1-37);
+  }
 }
 void idle(){
 }
@@ -1724,7 +1747,7 @@ void stencilInit(){
   //必ず不合格になる四角の空間を作成して、不合格ビットのところには指定モデル描画を行わないようにする
 }
 //refと比べて大きいステンシルのみ表示
-void stencil(GLint ref){
+void stencil(GLint refV){
     //ステンシルが通らなかったとき
     GLenum stencilFail=GL_ZERO;
     GLenum depthFail=GL_KEEP; //たぶんdepthにかかわらず操作したい時とか
@@ -1752,7 +1775,7 @@ void stencil(GLint ref){
     //GL_ALWAYS：すべて合格
     //※[&]はビット単位のAND演算
     GLuint mask=0x11111111;
-    glStencilFunc(GL_GREATER,ref,mask);//三角のと色々試せるのを作ろう
+    glStencilFunc(GL_GREATER,refV,mask);//三角のと色々試せるのを作ろう
 }
   GLuint alwaysmask=0xFF;
 
@@ -1767,20 +1790,20 @@ void stencil(GLint ref){
 //drawTexture()
 GLboolean F=GL_FALSE;
 
-void setMask(GLint ref){
+void setMask(GLint refV){
   auto rep=GL_REPLACE;
   //glColorMask(F,F,F,F);
   //glDepthMask(F);
   glStencilOp(rep,rep,rep);
-  glStencilFunc(GL_NEVER,ref,alwaysmask);
+  glStencilFunc(GL_NEVER,refV,alwaysmask);
   //glStencilMask(0);
 }
 
-void setPoly(GLint ref){
+void setPoly(GLint refV){
   auto keep=GL_KEEP;
   auto rep=GL_INCR;
   glStencilOp(keep,keep,keep);
-  glStencilFunc(GL_GEQUAL,ref,alwaysmask);
+  glStencilFunc(GL_GEQUAL,refV,alwaysmask);
 }
 const int cubeTexSize=128;
 void loadCubeTexture(){
@@ -1807,9 +1830,9 @@ void loadCubeTexture(){
     /* テクスチャの読み込みに使う配列 */
     GLubyte texture[cubeTexSize][cubeTexSize][4];
     FILE *fp;
-  
+    errno_t t=(fopen_s(&fp,textures[i], "rb"));
     /* テクスチャ画像の読み込み */
-    if ((fp = fopen(textures[i], "rb")) != NULL) {
+    if (t == NOERROR) {
       fread(texture, sizeof texture, 1, fp);
       fclose(fp);
     }

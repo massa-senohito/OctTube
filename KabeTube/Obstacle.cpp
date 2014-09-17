@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Obstacle.h"
+#include "Renderer.h"
 bool nearBy(const b2Vec2& pos,float32 x,float32 y){
     auto px=pos.x-x;
     auto py=pos.y-y;
@@ -67,7 +68,7 @@ Obstacle::~Obstacle()
 }
 
 Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
-  :Age(0),points(nullptr)
+:Age(0), points(nullptr)
 {
   def=new b2BodyDef();
   s=new b2CircleShape;
@@ -90,24 +91,21 @@ Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
 void Enemy::Impulse(V2 v){
   body->ApplyLinearImpulse(v,body->GetLocalCenter(),false);
 }
-void Enemy::SetPoints(Points p){
+void Enemy::SetPoints(Points p,int len){
   points=p;
+  pointsLength=len;
 }
 void Enemy::Update(){
   Age++;
   float32 ang=body->GetAngle();
   auto p=body->GetPosition();
-  static int pl=points->Length;
   //-59,-37
   glTranslatef(p.x,p.y,0);
   glRotatef(ang,0,0,1);
   float32 scale=1.0f/150.0f;
   glScalef(scale,scale,0);
   glBegin(GL_LINES);
-  for (int i = 0; i < pl; i+=2)
-  {
-    glVertex2f(points[i]-59,points[i+1]-37);
-  }
+  renderVertice(points,pointsLength);
   glEnd();
   glLoadIdentity();
   //return pos;

@@ -1,5 +1,6 @@
 #pragma once
 typedef const char* string; 
+#define ref /**/
 ref class Shader
 {
     int vsid;
