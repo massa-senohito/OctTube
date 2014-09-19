@@ -3,6 +3,7 @@
 #include <Box2D\Box2D.h>
 #include "DebugDraw.h"
 #include "PhysicSystem.h"
+#include "MyContactFilter.h"
 #include <list>
 #include <functional>
 #define red 0.9f,0.2f,0.2f
@@ -82,7 +83,7 @@ void eachParticle(){
 
 
 DebugDraw* dd;
-
+MyContactFilter* cfilter;
 auto downGrav=-9.8f;
 b2Vec2 grav(0.0,9.8f);
 void PhysicSystem::makeOuterFence(int x,int y){
@@ -118,13 +119,18 @@ PhysicSystem::PhysicSystem(void)
   particleSysDef->repulsiveStrength;
   
   particleSys=w->CreateParticleSystem(particleSysDef);
+  //particleSys のdencityとstride(stride*diameter)で質量もとめられている
+  //しかし、パーティクル同士の接触の振る舞いには関与しない
+  //particleSys->SetDensity
   //パーティクルグループdefでshapeを指定して
   //時間で削除するようにする
   particleSys->SetDestructionByAge(true);
   dd=new DebugDraw();
   dd->SetFlags(b2Draw::e_particleBit|b2Draw::e_shapeBit);
   w->SetDebugDraw(dd);
-  //w->S
+  cfilter = new MyContactFilter;
+  
+  w->SetContactFilter(cfilter);
   obs=gcnew Obss;
   makeOuterFence(73,53);
   ens=gcnew Enes;
@@ -134,6 +140,8 @@ PhysicSystem::PhysicSystem(void)
 inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   auto shape=new b2PolygonShape();
   shape->SetAsBox(hx,hy,cen,0);
+  auto mass = new b2MassData;
+  shape->ComputeMass(mass, 0.1f);
   return shape;
 }
 void makeParticle(float x,float y){
@@ -145,9 +153,11 @@ void makeParticle(float x,float y){
   //auto circle=new b2CircleShape;
   //circle->m_radius=
   d.shape=createBox(3,3,V2(x,y));
-  d.flags=b2_tensileParticle;
+  
+  d.flags=b2_tensileParticle | b2_fixtureContactFilterParticle;
   d.position=b2Vec2(x,y);
   auto pg=particleSys->CreateParticleGroup(d);
+  auto mass=pg->GetMass();//グループ内の総質量
 }
 void makeFlyBox(float x,float y){
   auto d=new b2BodyDef();
@@ -234,6 +244,9 @@ PhysicSystem::~PhysicSystem(){
   if(dd!=nullptr)
    delete dd;
   dd=nullptr;
+  if (cfilter != nullptr)
+    delete cfilter;
+  cfilter = nullptr;
   delFences();
   delete obs;
   obs=nullptr;

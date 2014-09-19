@@ -32,6 +32,7 @@ namespace Convert{
 }
 #endif
 float toRad(float ang){return ang/180*3.141592f;}
+float toDeg(float deg){return deg*180/3.141592f;}
 void drawClothHair(float angle){
   float radius=6;
   
@@ -42,12 +43,30 @@ void drawClothHair(float angle){
 namespace Assets{
   Points squid;
   int squidLen;
+  Points squidElem;//テンプレートメタプログラミングで最適化が望めるが、ここではやらんでおく
   Points getSquidPoints(){
     return ( squid);
+  }
+  Points getSquidElem(){
+    return squidElem;
   }
   int squidPLen(){
     return squidLen;
   }
+}
+/*
+let tt t=
+thre * (one-t)* (one-t)* t
+let t3 t=
+thre*t*t*(one-t)
+let ttt t=t*t*t
+let bejx xx xxx t=
+(tt t) * xx * (t3 t) * xxx+ttt(t)
+*/
+const float onef = 1.0f;
+float bej(float t){
+  return 3.0f * (onef - t)*(onef - t)*t *
+    onef *3.0f*t*t*(onef - t)*onef + t*t*t;
 }
 //typedef std::basic_istringstream<char> istringstream;
 //using vector<T>=std::vector<T>;
@@ -102,7 +121,7 @@ Points svgRead(String name){
     gcnew array<float>(0);
 #else
   FILE* p;
-  auto e = fopen_s(&p, name, "r");
+  auto e = fopen_s(&p, name, "rb");
   if (e == 0){
     int flamenum = 0;
     siz = 0;
@@ -112,13 +131,17 @@ Points svgRead(String name){
     fread(&siz, sizeof(int), (size_t)1, p);
     //freadするために1次元
     auto tmp = new float[(flamenum*siz)];
+    auto tes = new float[flamenum][442];
     while (t != 0){
       tmp; //->push(new float[siz]);
-      t = fread(&tmp[count*siz], sizeof(float), (size_t)siz, p);
+      t = fread(
+        &tmp[count*siz]
+        //tes[count]
+        , sizeof(float), (size_t)siz, p);
       ++count;
       //t=0;
     }
-  //fclose(p);
+  fclose(p);
   return tmp;
   }
 
@@ -175,7 +198,8 @@ void onRenderFrame(int time){
   int movableF=2;
   float power=18;
   //if(c%50==0){makeParticle(pos);}
-  step();
+  //stepできるようになったので
+  //step();
 
   drawClothHair(angle);
   //std::cout << angle << std::endl;
@@ -200,9 +224,15 @@ void onRenderFrame(int time){
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
-    auto squid = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
+  auto squid = //"C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
+    "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\allFlame";
     Assets::squid= svgRead(squid);
     Assets::squidLen = siz;
+    Assets::squidElem = gcnew float[siz];
+    for (size_t i = 0; i < siz; i++)
+    {
+      Assets::squidElem[i] = i;
+    }
     auto sys=gcnew PhysicSystem();
     sys->MakeParticle(pos);
     //char ** arg= strMap(args);//opentkだと？
@@ -216,7 +246,8 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
     std::cout << csv<< std::endl;;
     fileRead(csv,sys);
 
-    Renderer rend([](int count){
+    Renderer rend([&sys](int count){
+      sys->Step();
       onRenderFrame(count);
     }
     );

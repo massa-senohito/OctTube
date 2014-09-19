@@ -1,6 +1,7 @@
 #pragma once
 void drawClothHair(float);
 float toRad(float);
+float toDeg(float);
 //http://manski.net/2011/04/cpp-cli-cheat-sheet/
 //CLIかどうか知るには、他にもチートシートが
 #ifdef _MANAGED
@@ -24,8 +25,10 @@ typedef array<string>^ stringArray;
 namespace Assets{
   Points getSquidPoints();
   int squidPLen();
+  Points getSquidElem();
 }
 Points svgRead(String);
+float bej(float t);
 class GameAlgolyzm
 {
 public:

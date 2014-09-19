@@ -10,22 +10,26 @@ void collideAndDamage(b2Fixture* f,PSys sys,int32 a){
 }
 MyContactFilter::MyContactFilter(void)
 {
+  
 }
 bool MyContactFilter::ShouldCollide(b2Fixture* f,b2Fixture* ff){
     //bodyやユーザーデータ、AABB,ポイントテストができる
     //f->
-    return true;
+    return false;
 }
 ///恐らくこの処理のアトコンタクトコールバックを呼び出す
-//なので副作用的な動作は関数に逃がしておいたほうが無難
-bool MyContactFilter::ShouldCollide(b2Fixture* f,PSys sys,int32 a){
-    //f->
-    //sys->ParticleApplyForce(a,;
-    auto pos=sys->GetPositionBuffer()[a];//[sizeof(float32)*2*a];
+////contactCallback使うほうがそれらしいので副作用的な動作は関数に逃がしておいたほうが無難
+bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 a){
+  //f->
+  //sys->ParticleApplyForce(a,;
+  if (f != nullptr){
+    auto pos = sys->GetPositionBuffer()[a];//[sizeof(float32)*2*a];
     //sys->SetParticleFlags(a,0);
-    collideAndDamage(f,sys,a);
+    collideAndDamage(f, sys, a);
 
     return true;//壁とは衝突する
+  }
+  else return false;
 }
 bool MyContactFilter::ShouldCollide(PSys sys,int32 a,int32 b){
     //f->

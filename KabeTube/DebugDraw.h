@@ -41,7 +41,7 @@ void drawRect(const b2Vec2 centers, const b2ParticleColor colors){
   glPopMatrix();
 }
 void DebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color){
-  glBegin(GL_POLYGON);
+  glBegin(GL_LINE_LOOP);
   //”‚Åê‡•ª‚¯‚µ‚Äãè‚­OŠp•ªŠ„‚à‚Å‚«‚é‚ª–Ê“|‚¾‚µ‚¢‚¢‚â
   glColor3f(1,0,0);
   for (int i = 0; i < vertexCount; i++)

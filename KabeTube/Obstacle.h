@@ -58,10 +58,13 @@ ref class Enemy
   Body body;
   Fixture fixture;
   BodyDef def;
-  CShape s;
+  PShape s;
+  b2AABB actBox;
   Points points; //draw時に名前で区別したほうが設計変更が少ないので、とりあえずおいておく
   EnemyData* e;
   int pointsLength;
+  void squidProfile(World,V2);
+  void motion();
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
   void SetPoints(Points,int);

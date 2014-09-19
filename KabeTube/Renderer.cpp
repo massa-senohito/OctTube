@@ -58,10 +58,10 @@ void  setConsoleColorDef(){
 #endif
 }
 void loopEnd(){
-    setConsoleColorYellow();
+    //setConsoleColorYellow();
     //std::cout << radius //"loopEnd"
     //    << std::endl;
-    setConsoleColorDef();
+    //setConsoleColorDef();
 }
 bool isErr(const GLchar* mes,int line){
   GLenum er=glGetError();
@@ -264,7 +264,10 @@ void display()
   //glMatrixMode‚ÍMODELVIEWs—ñ‚É‚µ‚Ä‚¢‚é
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  static float wid=320/6;static float hei=240/6;
+  static float wid=320/6;
+  static float hei=240/6;
+  //wid = 180;
+  //hei= 180;
   glOrtho(-wid,wid,-hei,hei,-50,50);
   
   glMatrixMode(GL_MODELVIEW);
@@ -365,7 +368,8 @@ void renderVertice(Points ps,int len){
     auto psi = ps[i];
     auto psi1 = ps[i+1];
 #endif
-    glVertex2f( psi-59,psi1-37);
+    glVertex2f( psi-59,psi1-90);
+    //glVertex2f( psi,psi1);
   }
 }
 void idle(){
