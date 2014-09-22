@@ -42,8 +42,9 @@ void drawClothHair(float angle){
 }
 namespace Assets{
   Points squid;
-  int squidLen;
   Points squidElem;//テンプレートメタプログラミングで最適化が望めるが、ここではやらんでおく
+  int squidLen;
+
   Points getSquidPoints(){
     return ( squid);
   }
@@ -52,6 +53,19 @@ namespace Assets{
   }
   int squidPLen(){
     return squidLen;
+  }
+  //後ほどクラスに移動する
+  Points tako;
+  Points takoElem;
+  int takoLen;
+  Points getTakoPoints(){
+    return tako;
+  }
+  Points getTakoElem(){
+    return takoElem;
+  }
+  int getTakoLen(){
+    return takoLen;
   }
 }
 /*
@@ -131,7 +145,7 @@ Points svgRead(String name){
     fread(&siz, sizeof(int), (size_t)1, p);
     //freadするために1次元
     auto tmp = new float[(flamenum*siz)];
-    auto tes = new float[flamenum][442];
+    //auto tes = new float[flamenum][442];
     while (t != 0){
       tmp; //->push(new float[siz]);
       t = fread(
@@ -189,8 +203,9 @@ void fileRead(String filename,PPhysicSystem sys){
 
 ///最後に撃った時のフレーム
 int lastFiredFrame=int(0);
-float angle=float(270);
+float angle=float(90);
 #define pos 0.5f,0.4f
+float posx = 29; float posy = -18.5f;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
 
@@ -199,26 +214,47 @@ void onRenderFrame(int time){
   float power=18;
   //if(c%50==0){makeParticle(pos);}
   //stepできるようになったので
-  //step();
 
-  drawClothHair(angle);
+  //クリップ範囲から離れてしまう
+  glTranslatef(posx+30, posy-60,0.0f);
+  glRotatef(180, 1, 0, 0);
+  glBegin(GL_LINES);
+  renderVertice(Assets::tako, Assets::takoLen);
+  glEnd();
+  //たこの触手をキーで動かせるが、足はベジエカーブを移動させればそれなりの見栄えになるみたい
+  //drawClothHair(angle);
+  glLoadIdentity();
   //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
     if(time-lastFiredFrame>10){
       float vx=cos(toRad(angle));
       float vy=sin(toRad(angle));
-      makeSinglePar(pos,vx*power,vy*power);
+      makeSinglePar
+        (//pos
+        posx,posy,vx*power,vy*power);
       lastFiredFrame=time;
     }
   }
   if(Key::isLeftPushed()){
     if(time%movableF==0){
-      angle-=0.5f;
+      //angle-=0.5f;
+      posx -= 0.5f;
     }
   }
   if(Key::isRightPushed()){
     if(time%movableF==0){
-      angle+=0.5f;
+      //angle+=0.5f;
+      posx += 0.5f;
+    }
+  }
+  if(Key::isUpPushed()){
+    if(time%movableF==0){
+      posy += 0.5f;
+    }
+  }
+  if(Key::isDownPushed()){
+    if(time%movableF==0){
+      posy -= 0.5f;
     }
   }
 }
@@ -233,6 +269,16 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
     {
       Assets::squidElem[i] = i;
     }
+    auto tako =
+      "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\KabeTube\\KabeTube\\takoallFlame";
+    Assets::tako = svgRead(tako);
+    Assets::takoLen= siz;
+    Assets::takoElem = gcnew float[siz];
+    for (size_t i = 0; i < siz; i++)
+    {
+      Assets::takoElem[i] = i;
+    }
+
     auto sys=gcnew PhysicSystem();
     sys->MakeParticle(pos);
     //char ** arg= strMap(args);//opentkだと？
@@ -289,4 +335,8 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
+  delete[] Assets::squid;
+  delete[] Assets::squidElem;
+  delete[] Assets::tako;
+  delete[] Assets::takoElem;
 }

@@ -15,3 +15,5 @@ Debug/
 ipch/
 CMakeLists.*
 *.cgfx
+*.xcf
+*.svg

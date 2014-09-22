@@ -142,6 +142,7 @@ inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   shape->SetAsBox(hx,hy,cen,0);
   auto mass = new b2MassData;
   shape->ComputeMass(mass, 0.1f);
+  
   return shape;
 }
 void makeParticle(float x,float y){
@@ -157,6 +158,7 @@ void makeParticle(float x,float y){
   d.flags=b2_tensileParticle | b2_fixtureContactFilterParticle;
   d.position=b2Vec2(x,y);
   auto pg=particleSys->CreateParticleGroup(d);
+  //d‚É‚àpg‚É‚àdencity‚È‚¢
   auto mass=pg->GetMass();//ƒOƒ‹[ƒv“à‚Ì‘Ž¿—Ê
 }
 void makeFlyBox(float x,float y){
@@ -216,8 +218,6 @@ void step(){
       auto dist=p-(*fpart);
 //      int siz=1;
 //      glRecti(-siz,-siz,siz,siz);
-
-      
     }
     //‚©‚×‚Ì•`‰æ@‚Ü‚ Œp³‚ÅDrawŒÄ‚Ô‚Ì‚ª‘Ã“–‚©
     //bod->GetFixtureList()

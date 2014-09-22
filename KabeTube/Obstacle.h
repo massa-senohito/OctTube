@@ -72,6 +72,9 @@ public:
   //EnemyData GetEnemyData();
   int Age;
   void Impulse(V2);
+  void Force(V2 v);
+  void Veloc(V2 v);
+
   Body GetBody();
   void Update();
 };

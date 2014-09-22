@@ -16,6 +16,12 @@ namespace Key{
   bool isRightPushed(){
       return pushed[Key::Right];
   }
+  bool isUpPushed(){
+      return pushed[Key::Up];
+  }
+  bool isDownPushed(){
+      return pushed[Key::Down];
+  }
   int timeOfAPushed(){
       return lastPushed[Key::A];
   }
@@ -264,10 +270,16 @@ void display()
   //glMatrixMode‚ÍMODELVIEWs—ñ‚É‚µ‚Ä‚¢‚é
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  static float wid=320/6;
-  static float hei=240/6;
+  static float wid=320.0/6.0;
+  static float hei=240.0/6.0;
   //wid = 180;
   //hei= 180;
+  if (Key::isLeftPushed()){
+    //wid -= 1;
+  }
+  if (Key::isDownPushed()){
+    //hei -= 1;
+  }
   glOrtho(-wid,wid,-hei,hei,-50,50);
   
   glMatrixMode(GL_MODELVIEW);
@@ -359,6 +371,8 @@ void renderVertice(Points ps,int len){
   int pl=ps->Length;
 #else
   int pl=len;
+  auto verts=Vector<float>(len);
+
 #endif
   for (int i = 0; i < pl; i+=2)
   {
@@ -367,6 +381,8 @@ void renderVertice(Points ps,int len){
 #else
     auto psi = ps[i];
     auto psi1 = ps[i+1];
+    verts[i]=(psi);
+    verts[i+1]=(psi1);
 #endif
     glVertex2f( psi-59,psi1-90);
     //glVertex2f( psi,psi1);

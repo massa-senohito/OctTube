@@ -26,4 +26,6 @@ enum  Key{
   bool isAPushed();
   bool isLeftPushed();
   bool isRightPushed();
+  bool isUpPushed();
+  bool isDownPushed();
 }

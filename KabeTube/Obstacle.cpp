@@ -14,6 +14,16 @@ bool nearBy(const b2Vec2& pos,float32 x,float32 y){
 bool nearFloat(float t, float min, float max){
   return abs(t - max) < epsilon || abs(t - min) < epsilon;
 }
+typedef float fl;
+fl max(fl x, fl y){
+  return x>y ? x : y;
+}
+fl min(fl x, fl y){
+  return x<y ? x : y;
+}
+fl clamp(fl t, fl mn, fl mx){
+  return min(mx, max(t, mn));
+}
 const int invcount=10;//最低10フレームの間反転しない
 void Obstacle::invMove(const b2Vec2& pos){
     if(inverceMove){
@@ -74,24 +84,30 @@ Obstacle::~Obstacle()
   //body->DestroyFixture で子の一部をパージできる
   //fixture ,jointはdeleteすんなって　おそらくボディがゾンビになったりしたときに回収されるはず
 }
+b2Joint& joint(World w,Body b,Body bb){
+
+  auto disj = b2DistanceJointDef();
+  disj.Initialize(b, bb, b->GetWorldCenter(), bb->GetWorldCenter());
+  return *(w->CreateJoint(&disj));
+}
+  //squid継承安定
 void Enemy::squidProfile(World w,V2 pos){
   actBox = b2AABB();
-  actBox.upperBound = V2(renderWid,renderHei);
-  actBox.lowerBound = V2(-renderWid,-renderHei);
+  actBox.upperBound = V2(renderWid-10,renderHei);
+  actBox.lowerBound = V2(-renderWid+10,-renderHei);
 
-  def=new b2BodyDef();
   s=new b2PolygonShape;
   //s->m_radius=size;
-  s->SetAsBox(10, 20);
+  s->SetAsBox(10, 15,V2(0,5),0);
   auto m=b2MassData();
-  s->ComputeMass(&m,1);
+  s->ComputeMass(&m,0.1f);
   
+  def=new b2BodyDef();
   def->position=pos;
   //def->angle = 90;
   def->gravityScale = 0.01f;
   def->angularDamping = 0.1f;
   
-  //
   def->type=b2BodyType::b2_dynamicBody;
   e=  new EnemyData;
   e->Name="squid";
@@ -108,62 +124,106 @@ Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
   //switch
   squidProfile(w, pos);
 }
-void Enemy::Impulse(V2 v){
+void Enemy::Impulse(V2 v)
+{
   body->ApplyLinearImpulse(v,body->GetLocalCenter(),false);
+}
+void Enemy::Force(V2 v)
+{
+  body->ApplyForceToCenter(v,false);
+}
+void Enemy::Veloc(V2 v){
+  body->SetLinearVelocity(v);
 }
 void Enemy::SetPoints(Points p,int len){
   points=p;
   pointsLength=len;
   //Assetがelem 
 }
-float squidRotation(float v){
-  //glRotatef(v, 0, 1, 0);
-  return v *2;
-}
-
+enum Moving{
+  R,
+  L,
+  TL,
+  TR,
+};
 void Enemy::motion(){
+  static float32 one = 1.0f;
+  static float32 zero= 0.0f;
 //todo アニメーションステートマシン内で管理させたほうが
-  static float rotationAnim = 0.0f;
-  static int animationstateWait = 20;
   auto p=body->GetPosition();
   float32 ang=body->GetAngle();
   //-59,-37
   glTranslatef(p.x,p.y,0);
   glRotatef(toDeg( ang)+180.0f,0,0,1);
-  float32 scale=1.0f/4.0f;
-  glScalef(scale,scale,0);
-  static float32 one = 0.5f;
-  static float32 zero= 0.0f;
+//キャッチボールみたいな動き＝外に壁があれば
+  //数フレに1度Impulse
+  //Unityで実験化
+  static float rotationAnim = 0.0f;
+  static auto animationstateWait = 20.0f;
+  static const auto stateWait = 20.0f;
+  static auto mov = R;
+  static auto speed = one*800;
+  static const auto slowspeed = 0.1f;
+  glRotatef(rotationAnim,0,1,0);
   if (animationstateWait>0){
+    switch (mov)
+    {
+    case R:
+      Force(V2(speed, zero));
+      break;
+    case L:
+      Force(V2(-speed, zero));
+      break;
+    case TL:
+      Force(V2(-speed, zero));
+      break;
+    case TR:
+      Force(V2(speed, zero));
+      break;
+    default:
+      break;
+    }
     if (p.x > actBox.upperBound.x){
-      //左に回転しつつちょっと移動
-      //rotationAnim = 0.0f;
-      squidRotation(bej(rotationAnim)*180.0f);
-      rotationAnim += 0.1f;
-      --animationstateWait;
-      Impulse(V2(-one, zero));
+      mov = TL;
+      //speed = slowspeed;
+      rotationAnim= (1.0f-bej((stateWait-animationstateWait)/stateWait))*180.0f; 
+      rotationAnim = clamp(rotationAnim, 0.0f, 180.0f);
+
+      --animationstateWait; //roty<-(1.0f-roty)* 180.0f
+      //Force(V2(-one, zero));
+      Veloc(V2(-one, zero));
     }
     if (p.y > actBox.upperBound.y){
       Impulse(V2(zero, -one));
     }
     if (p.x < actBox.lowerBound.x){
-      squidRotation(bej(rotationAnim)*180.0f);
-      rotationAnim += 0.1f;
+      mov = TR;
+      //speed = slowspeed;
+      rotationAnim= bej((stateWait-animationstateWait)/stateWait)*180.0f; 
+      rotationAnim = clamp(rotationAnim, 0.0f, 180.0f);
       --animationstateWait;
-      Impulse(V2(one, zero));
+      Veloc(V2(one, zero));
     }
     if (p.y < actBox.lowerBound.y){
       Impulse(V2(zero, one));
     }
   }
-  else{ animationstateWait = 20; }
+  else{
+    //rotCount<-rotWait
+    //  speed<-1.0f
+    //if mov = TurnLeft then mov<-Left else mov<-Right
+
+    animationstateWait = stateWait; 
+    speed = one*800;
+    if (mov == TL)mov = L; else mov = R;
+  }
 }
 void Enemy::Update(){
   Age++;
-  body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
+  //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
   motion();
-  auto ang=def->angle;
-  auto ab=body->GetAngle();
+  float32 scale=1.0f/4.0f;
+  glScalef(scale,scale,0);
   //ダメージ分をシェーダに渡して頂点色をいじりたい
   //燻製なので白方面に
   glBegin(GL_LINES);
