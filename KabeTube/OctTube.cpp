@@ -161,13 +161,15 @@ int texTest(int argc , char ** argv){
 }
 
 void kabeMain(const char* args){
-  new GameAlgolyzm(Vector<std::string>());
+  auto ar = Vector<std::string>();
+  ar.push_back(std::string( args));
+  auto ga=GameAlgolyzm(ar);
 }
-int main(char* args[])
+int main(int argc,char* argv[])
 {
   try{
     //texTest(0,nullptr);
-    kabeMain("");
+    kabeMain(argv[0]);
   }catch
 #ifdef _MANAGED
     (System::IO::FileLoadException^ e){

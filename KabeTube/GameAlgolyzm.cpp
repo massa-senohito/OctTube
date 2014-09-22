@@ -260,51 +260,47 @@ void onRenderFrame(int time){
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
-  auto squid = //"C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
-    "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\allFlame";
-    Assets::squid= svgRead(squid);
-    Assets::squidLen = siz;
-    Assets::squidElem = gcnew float[siz];
-    for (size_t i = 0; i < siz; i++)
-    {
-      Assets::squidElem[i] = i;
-    }
-    auto tako =
-      "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\KabeTube\\KabeTube\\takoallFlame";
-    Assets::tako = svgRead(tako);
-    Assets::takoLen= siz;
-    Assets::takoElem = gcnew float[siz];
-    for (size_t i = 0; i < siz; i++)
-    {
-      Assets::takoElem[i] = i;
-    }
+  auto path = args[0];
+  auto lastBel=path.find_last_of('\\');
+  path = path.substr(0,lastBel);
+  Assets::squid= svgRead((path+"\\allFlame").data());
+  Assets::squidLen = siz;
+  Assets::squidElem = gcnew float[siz];
+  for (size_t i = 0; i < siz; i++)
+  {
+    Assets::squidElem[i] = i;
+  }
+  Assets::tako = svgRead((path+"\\takoallFlame").data());
+  Assets::takoLen= siz;
+  Assets::takoElem = gcnew float[siz];
+  for (size_t i = 0; i < siz; i++)
+  {
+    Assets::takoElem[i] = i;
+  }
 
-    auto sys=gcnew PhysicSystem();
-    sys->MakeParticle(pos);
-    //char ** arg= strMap(args);//opentkÇæÇ∆ÅH
-    int len = 0; //(args->Length);
-    GLUT_INITs(len ,nullptr);
-    ///drawable,steppableçÏÇÈÇ◊Ç´
-    auto csv = "coe.csv";
-#ifdef _DEBUG
-    csv="C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Projects\\OctTube\\Debug\\coe.csv";
-#endif
-    std::cout << csv<< std::endl;;
-    fileRead(csv,sys);
+  auto sys=gcnew PhysicSystem();
+  sys->MakeParticle(pos);
+  //char ** arg= strMap(args);//opentkÇæÇ∆ÅH
+  int len = 0; //(args->Length);
+  GLUT_INITs(len ,nullptr);
+  ///drawable,steppableçÏÇÈÇ◊Ç´
+  auto csv = path+"\\coe.csv";
+  std::cout << csv<< std::endl;;
+  fileRead(csv.data(),sys);
 
-    Renderer rend([&sys](int count){
-      sys->Step();
-      onRenderFrame(count);
-    }
-    );
-    //char* c=toCp(ar[0]);
-    //auto g=new GUIUtil();
-    //splitTest();
-    //TrueÇ…Ç»ÇÈ
-    //Console::WriteLine(arg[0]);
-    //std::cout << (arg[0])<< std::endl;;
-    rend.renderPolygon(nullptr,0);
-    glutMainLoop();
+  Renderer rend([&sys](int count){
+    sys->Step();
+    onRenderFrame(count);
+  }
+  );
+  //char* c=toCp(ar[0]);
+  //auto g=new GUIUtil();
+  //splitTest();
+  //TrueÇ…Ç»ÇÈ
+  //Console::WriteLine(arg[0]);
+  //std::cout << (arg[0])<< std::endl;;
+  rend.renderPolygon(nullptr,0);
+  glutMainLoop();
 }
 bool 
   isAllMeatFired ()//ms=

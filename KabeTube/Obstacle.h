@@ -65,6 +65,9 @@ ref class Enemy
   int pointsLength;
   void squidProfile(World,V2);
   void motion();
+
+  Body* tents;
+  Body* sqTentacle(V2 parentPos);
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
   void SetPoints(Points,int);

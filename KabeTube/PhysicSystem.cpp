@@ -121,7 +121,7 @@ PhysicSystem::PhysicSystem(void)
   particleSys=w->CreateParticleSystem(particleSysDef);
   //particleSys のdencityとstride(stride*diameter)で質量もとめられている
   //しかし、パーティクル同士の接触の振る舞いには関与しない
-  //particleSys->SetDensity
+  particleSys->SetDensity(0.1);
   //パーティクルグループdefでshapeを指定して
   //時間で削除するようにする
   particleSys->SetDestructionByAge(true);

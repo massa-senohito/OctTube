@@ -48,7 +48,6 @@ void Obstacle::Update(){
 }
 void Obstacle::Movable()
 {
-
 //    float32 tox;float32 toy;
     movable=true;
 }
@@ -90,7 +89,39 @@ b2Joint& joint(World w,Body b,Body bb){
   disj.Initialize(b, bb, b->GetWorldCenter(), bb->GetWorldCenter());
   return *(w->CreateJoint(&disj));
 }
-  //squid継承安定
+PShape sqTentShape(V2& pos,fl ang){
+  PShape s=new b2PolygonShape;
+  s->SetAsBox(1, 6, pos, ang);
+  return s;
+}
+  //enemydata,body利用してるので順番に注意
+Body* Enemy::sqTentacle(V2 parentPos){
+  auto bods = new Body[3];
+  auto underp=parentPos + V2(31, -20);
+  auto street=sqTentShape(underp, 0);
+  auto le=sqTentShape(underp+V2(7.1,2), -5.7);
+  auto ri=sqTentShape(underp+V2(-7.1,2), 5.7);
+  auto def = new b2BodyDef;
+  def->position = parentPos;
+  //def->type=b2BodyType::b2_dynamicBody;
+  def->userData = e;
+  auto m=b2MassData();
+  street->ComputeMass(&m,0.1f);
+  auto w=body->GetWorld();
+  bods[0]=w->CreateBody(def);
+  bods[1]=w->CreateBody(def);
+  bods[2]=w->CreateBody(def);
+  bods[0]->CreateFixture(street, 0);
+  bods[1]->CreateFixture(le, 0);
+  bods[2]->CreateFixture(ri, 0);
+  //center inertia狂う
+  auto tesm = b2MassData();
+  le->ComputeMass(&tesm, 0.1f);
+  bods[0]->SetMassData(&m);
+  bods[1]->SetMassData(&m);
+  bods[2]->SetMassData(&m);
+  return bods;
+}
 void Enemy::squidProfile(World w,V2 pos){
   actBox = b2AABB();
   actBox.upperBound = V2(renderWid-10,renderHei);
@@ -112,16 +143,22 @@ void Enemy::squidProfile(World w,V2 pos){
   e=  new EnemyData;
   e->Name="squid";
   def->userData=e;
-  //"enemy";
+
   body=w->CreateBody(def);
   body->SetMassData(&m);
   fixture=body->CreateFixture(s,0);
+  tents=sqTentacle(pos);
+  auto& j=joint(w, body, tents[0]);
+  auto& jj=joint(w, body, tents[1]);
+  auto& jjj=joint(w, body, tents[2]);
+  
   auto mass=body->GetMass();
 }
 Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
 :Age(0), points(nullptr)
 {
   //switch
+  //squid.csvでアセットと形状、トランスフォーム
   squidProfile(w, pos);
 }
 void Enemy::Impulse(V2 v)
@@ -239,6 +276,12 @@ Body Enemy::GetBody(){
 //EnemyData
 Enemy::~Enemy(){
   auto w=body->GetWorld();
+  ;//nextなくさないだろうか
+  for (auto j=w->GetJointList(); j!=nullptr; j=j->GetNext())
+  {
+    w->DestroyJoint(j);
+  }
+
   w->DestroyBody(body);
   delete s;
   delete e;
