@@ -2,6 +2,12 @@
 #include "Obstacle.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
+#include "Enemy.h"
+SoundAsset* squidAsset;
+void playSquidDamageSound(){
+  squidAsset->PlayDamageSound();
+}
+AnimAsset* animAsset;
 
 const auto renderWid = 320.0 / 6.;
 const auto renderHei = 240.0 / 6.;
@@ -58,15 +64,15 @@ Obstacle::Obstacle(World w,b2Vec2 pos,b2Vec2 size)
 {
   def=new b2BodyDef();
   s=new b2PolygonShape;
-  s->SetAsBox(size.x/2,size.y/2);
-  def->position=pos;
+  s  ->SetAsBox(size.x/2,size.y/2);
+  def->position = pos;
   def->userData = nullptr;
-  def->type=b2BodyType::b2_kinematicBody; //staticとかkinematicとか
-  body=w->CreateBody(def);
+  def->type     = b2BodyType::b2_kinematicBody; //staticとかkinematicとか
+  body    = w->CreateBody(def);
   //二つの物体間の距離や、内側に特定の点があるかを fixture から
   //body->
   //fixture->
-  fixture=body->CreateFixture(s,0);
+  fixture = body->CreateFixture(s,0);
 }
 Body Obstacle::GetBody(){
   return body;
@@ -84,10 +90,15 @@ Obstacle::~Obstacle()
   //fixture ,jointはdeleteすんなって　おそらくボディがゾンビになったりしたときに回収されるはず
 }
 b2Joint& joint(World w,Body b,Body bb){
-
-  auto disj = b2DistanceJointDef();
-  disj.Initialize(b, bb, b->GetWorldCenter(), bb->GetWorldCenter());
-  return *(w->CreateJoint(&disj));
+  b2PrismaticJointDef joi;
+  auto anc = b->GetWorldCenter() - bb->GetWorldCenter();
+  //auto joi = b2DistanceJointDef();
+  joi.Initialize(b, bb
+    , anc / 2 , anc / 2);
+  joi.enableLimit = true;
+  joi.upperTranslation = 1;
+  joi.lowerTranslation= -1;
+  return *(w->CreateJoint(&joi));
 }
 PShape sqTentShape(V2& pos,fl ang){
   PShape s=new b2PolygonShape;
@@ -96,62 +107,69 @@ PShape sqTentShape(V2& pos,fl ang){
 }
   //enemydata,body利用してるので順番に注意
 Body* Enemy::sqTentacle(V2 parentPos){
-  auto bods = new Body[3];
-  auto underp=parentPos + V2(31, -20);
-  auto street=sqTentShape(underp, 0);
-  auto le=sqTentShape(underp+V2(7.1,2), -5.7);
-  auto ri=sqTentShape(underp+V2(-7.1,2), 5.7);
-  auto def = new b2BodyDef;
+  auto bods   = new Body[3];//shapeに追加すればいいんじゃない
+  auto underp = parentPos + V2(31, -20);
+  auto street =sqTentShape(underp, 0);
+  auto le     =sqTentShape(underp+V2( 7.1 , 2) ,-5.7);
+  auto ri     =sqTentShape(underp+V2(-7.1 , 2) , 5.7);
+  auto def      = new b2BodyDef;
   def->position = parentPos;
-  //def->type=b2BodyType::b2_dynamicBody;
-  def->userData = e;
-  auto m=b2MassData();
-  street->ComputeMass(&m,0.1f);
-  auto w=body->GetWorld();
-  bods[0]=w->CreateBody(def);
-  bods[1]=w->CreateBody(def);
-  bods[2]=w->CreateBody(def);
-  bods[0]->CreateFixture(street, 0);
-  bods[1]->CreateFixture(le, 0);
-  bods[2]->CreateFixture(ri, 0);
+  def->type     = b2BodyType::b2_dynamicBody;
+  auto m      = b2MassData();
+  street->ComputeMass( &m , 1/24.0f );
+  auto w      = body->GetWorld();
+  bods[0]     = w->CreateBody(def);
+  bods[1]     = w->CreateBody(def);
+  bods[2]     = w->CreateBody(def);
+  auto f1     = bods[0]->CreateFixture(street, 0);
+  auto f2     = bods[1]->CreateFixture(le, 0);
+  auto f3     = bods[2]->CreateFixture(ri, 0);
+  tentData    = new EnemyData*[3];
+  tentData[0] = new EnemyData(0,"tent0");
+  tentData[1] = new EnemyData(0,"tent1");
+  tentData[2] = new EnemyData(0,"tent2");
+  
+  f1->SetUserData(tentData[0]);
+  f2->SetUserData(tentData[1]);
+  f3->SetUserData(tentData[2]);
   //center inertia狂う
   auto tesm = b2MassData();
-  le->ComputeMass(&tesm, 0.1f);
+  le->ComputeMass( &tesm , 0.01f );
   bods[0]->SetMassData(&m);
   bods[1]->SetMassData(&m);
   bods[2]->SetMassData(&m);
   return bods;
 }
 void Enemy::squidProfile(World w,V2 pos){
-  actBox = b2AABB();
+  squidAsset =( new SoundAsset(Squid));
+  animAsset = new AnimAsset(Squid);
+  actBox            = b2AABB();
   actBox.upperBound = V2(renderWid-10,renderHei);
   actBox.lowerBound = V2(-renderWid+10,-renderHei);
 
-  s=new b2PolygonShape;
+  s                 = new b2PolygonShape;
   //s->m_radius=size;
   s->SetAsBox(10, 15,V2(0,5),0);
-  auto m=b2MassData();
+  auto m            = b2MassData();
   s->ComputeMass(&m,0.1f);
   
-  def=new b2BodyDef();
-  def->position=pos;
+  def               = new b2BodyDef();
+  def->position     = pos;
   //def->angle = 90;
-  def->gravityScale = 0.01f;
+  def->gravityScale   = 0.01f;
   def->angularDamping = 0.1f;
-  
-  def->type=b2BodyType::b2_dynamicBody;
-  e=  new EnemyData;
-  e->Name="squid";
-  def->userData=e;
-
-  body=w->CreateBody(def);
+  def->type         = b2BodyType::b2_dynamicBody;
+  e=  new EnemyData(0,"squid");
+  e->PlayDamagedSound = playSquidDamageSound;
+  body              = w->CreateBody(def);
   body->SetMassData(&m);
-  fixture=body->CreateFixture(s,0);
-  tents=sqTentacle(pos);
-  auto& j=joint(w, body, tents[0]);
-  auto& jj=joint(w, body, tents[1]);
+  fixture           = body->CreateFixture(s,0);
+  fixture->SetUserData(e);
+  tents             = sqTentacle(pos);
+  auto& j  =joint(w, body, tents[0]);
+  auto& jj =joint(w, body, tents[1]);
   auto& jjj=joint(w, body, tents[2]);
-  
+
   auto mass=body->GetMass();
 }
 Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
@@ -183,66 +201,68 @@ enum Moving{
   TL,
   TR,
 };
+static auto   mov = R;
 void Enemy::motion(){
   static float32 one = 1.0f;
   static float32 zero= 0.0f;
 //todo アニメーションステートマシン内で管理させたほうが
-  auto p=body->GetPosition();
-  float32 ang=body->GetAngle();
+  auto p             = body->GetPosition();
+  float32 ang        = body->GetAngle();
   //-59,-37
-  glTranslatef(p.x,p.y,0);
-  glRotatef(toDeg( ang)+180.0f,0,0,1);
+  glTranslatef( p.x , p.y , 0 );
+  glRotatef( toDeg( ang) + 180.0f , 0 , 0 , 1 );
 //キャッチボールみたいな動き＝外に壁があれば
   //数フレに1度Impulse
   //Unityで実験化
-  static float rotationAnim = 0.0f;
-  static auto animationstateWait = 20.0f;
-  static const auto stateWait = 20.0f;
-  static auto mov = R;
-  static auto speed = one*800;
-  static const auto slowspeed = 0.1f;
+  static float       rotationAnim = 0.0f;
+  static auto  animationstateWait = 20.0f;
+  static const auto     stateWait = 20.0f;
+  static auto               speed = one*800;
+  static const auto     slowspeed = 0.1f;
   glRotatef(rotationAnim,0,1,0);
   if (animationstateWait>0){
     switch (mov)
     {
     case R:
-      Force(V2(speed, zero));
+      Force( V2( speed , zero ) );
       break;
     case L:
-      Force(V2(-speed, zero));
+      Force( V2(-speed , zero ) );
       break;
     case TL:
-      Force(V2(-speed, zero));
+      Force( V2(-speed , zero ) );
       break;
     case TR:
-      Force(V2(speed, zero));
+      Force( V2( speed , zero ) );
       break;
     default:
       break;
     }
-    if (p.x > actBox.upperBound.x){
+    if ( p.x > actBox.upperBound.x ){
       mov = TL;
       //speed = slowspeed;
-      rotationAnim= (1.0f-bej((stateWait-animationstateWait)/stateWait))*180.0f; 
-      rotationAnim = clamp(rotationAnim, 0.0f, 180.0f);
+      rotationAnim = (1.0f-
+        bej( ( stateWait - animationstateWait ) / stateWait ) ) * 180.0f; 
+      rotationAnim = clamp( rotationAnim , 0.0f , 180.0f );
 
       --animationstateWait; //roty<-(1.0f-roty)* 180.0f
       //Force(V2(-one, zero));
-      Veloc(V2(-one, zero));
+      Veloc  ( V2( -one , zero ) );
     }
     if (p.y > actBox.upperBound.y){
-      Impulse(V2(zero, -one));
+      Impulse( V2( zero , -one ) );
     }
     if (p.x < actBox.lowerBound.x){
       mov = TR;
       //speed = slowspeed;
-      rotationAnim= bej((stateWait-animationstateWait)/stateWait)*180.0f; 
-      rotationAnim = clamp(rotationAnim, 0.0f, 180.0f);
+      rotationAnim= 
+        bej( ( stateWait - animationstateWait ) / stateWait ) * 180.0f; 
+      rotationAnim = clamp( rotationAnim , 0.0f , 180.0f );
       --animationstateWait;
-      Veloc(V2(one, zero));
+      Veloc  ( V2( one  , zero ) );
     }
     if (p.y < actBox.lowerBound.y){
-      Impulse(V2(zero, one));
+      Impulse( V2( zero , one  ) );
     }
   }
   else{
@@ -251,21 +271,37 @@ void Enemy::motion(){
     //if mov = TurnLeft then mov<-Left else mov<-Right
 
     animationstateWait = stateWait; 
-    speed = one*800;
-    if (mov == TL)mov = L; else mov = R;
+    speed              = one * 800;
+    if( mov == TL ) mov = L; else mov = R;
   }
 }
 void Enemy::Update(){
   Age++;
   //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
   motion();
-  float32 scale=1.0f/4.0f;
-  glScalef(scale,scale,0);
+  //std::cout << *(e->Damage) << std::endl;
+  float32  scale = 1.0f / 4.0f ;
+  glScalef(scale , scale , 0 );
   //ダメージ分をシェーダに渡して頂点色をいじりたい
   //燻製なので白方面に
   glBegin(GL_LINES);
+  //パーティクルが多くなると画面に白のもこもこが現れ、みづらくなる
   //anim+=pointsLength;points[anim];
-  renderVertice(points,pointsLength);
+  static bool state = false;
+  const int animLen = 38;
+  if (Age % animLen == 0) {
+    state = !state;
+    auto vel = body->GetLinearVelocity().x > 0 ? V2(2,0) : V2(-2,0);
+    if (state){
+      Impulse(vel);
+      if (mov==L || mov==R) //motionがつねにTL,TRになってる
+      squidAsset->PlayMovingSound();
+    }
+  }
+  int anim = state ? Age % animLen : animLen - Age % animLen;
+  animAsset->DamageColor(*e->Damage);//足などに個別には表示できない
+  renderVertice( points , pointsLength , anim/2 );
+  animAsset->NoUse();
   glEnd();
   glLoadIdentity();
   //return pos;
@@ -281,9 +317,11 @@ Enemy::~Enemy(){
   {
     w->DestroyJoint(j);
   }
-
+  delete e->Damage;
   w->DestroyBody(body);
   delete s;
+  delete &squidAsset;
   delete e;
   delete def;
+  delete[] tentData;
 }

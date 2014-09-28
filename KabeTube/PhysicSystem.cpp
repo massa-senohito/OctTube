@@ -88,10 +88,14 @@ auto downGrav=-9.8f;
 b2Vec2 grav(0.0,9.8f);
 void PhysicSystem::makeOuterFence(int x,int y){
   //sizeのせいで外にはみ出す可能性がある
-  auto f1= gcnew Obstacle(w,V2(x/2.f, 0.f), V2(1.f, y));
-  auto f2= gcnew Obstacle(w,V2(-x/2.f, 0.f), V2(1.f, y));
-  auto f3= gcnew Obstacle(w,V2(0.f, y/2.f), V2(x - 1.f, 1.f));
-  auto f4= gcnew Obstacle(w,V2(0.f, -y/2.f), V2(x - 1.f, 1.f));
+  auto f1= gcnew Obstacle
+    ( w , V2( x / 2.f , 0.f ) , V2( 1.f , y ) );
+  auto f2= gcnew Obstacle
+    ( w , V2(-x / 2.f , 0.f ) , V2( 1.f , y ) );
+  auto f3= gcnew Obstacle
+    ( w , V2( 0.f , y / 2.f ) , V2( x - 1.f , 1.f ) );
+  auto f4= gcnew Obstacle
+    ( w , V2( 0.f , -y/ 2.f ) , V2( x - 1.f , 1.f ) );
   obs->Add(f1);
   obs->Add(f2);
   obs->Add(f3);
@@ -107,8 +111,8 @@ PhysicSystem::PhysicSystem(void)
   //位置と接触フラグなどしかもってない
   //pd.position
   //粘性係数,大きさ、色のミキシングなど
-  particleSysDef=new b2ParticleSystemDef();
-  particleSysDef->radius;
+  particleSysDef = new b2ParticleSystemDef();
+  particleSysDef->radius=1.0f;
   //表面張力
   particleSysDef->surfaceTensionPressureStrength;
   //粘性係数
@@ -121,45 +125,46 @@ PhysicSystem::PhysicSystem(void)
   particleSys=w->CreateParticleSystem(particleSysDef);
   //particleSys のdencityとstride(stride*diameter)で質量もとめられている
   //しかし、パーティクル同士の接触の振る舞いには関与しない
-  particleSys->SetDensity(0.1);
+  particleSys->SetDensity(0.8);
   //パーティクルグループdefでshapeを指定して
   //時間で削除するようにする
   particleSys->SetDestructionByAge(true);
-  dd=new DebugDraw();
-  dd->SetFlags(b2Draw::e_particleBit|b2Draw::e_shapeBit);
+  dd = new DebugDraw();
+  dd->SetFlags(
+    b2Draw::e_particleBit | b2Draw::e_shapeBit );
   w->SetDebugDraw(dd);
   cfilter = new MyContactFilter;
   
   w->SetContactFilter(cfilter);
-  obs=gcnew Obss;
+  obs = gcnew Obss;
   makeOuterFence(73,53);
-  ens=gcnew Enes;
-  //dictionary検討か
-  //enemyLiving=new EneMap();
+  ens = gcnew Enes;
 }
 inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
-  auto shape=new b2PolygonShape();
-  shape->SetAsBox(hx,hy,cen,0);
-  auto mass = new b2MassData;
-  shape->ComputeMass(mass, 0.1f);
+  auto shape = new b2PolygonShape();
+  shape->SetAsBox( hx , hy , cen , 0 );
+  auto mass  = new b2MassData;
+  shape->ComputeMass( mass , 0.1f );
   
   return shape;
 }
 void makeParticle(float x,float y){
   b2ParticleGroupDef d;//d.particleCount=5; サンプル見比べておこう
-  uint8 zero=0;uint8 one=1;
+  uint8 zero = 0 ; uint8 one = 1;
   d.userData;
-  b2ParticleColor b(zero,one,zero,one);
-  d.color=b;
+  b2ParticleColor    b(zero,one,zero,one);
+  d.color    = b;
+  auto pos   = V2(x, y);
   //auto circle=new b2CircleShape;
   //circle->m_radius=
-  d.shape=createBox(3,3,V2(x,y));
+  d.shape    = createBox( 3 , 3 , pos );
   
-  d.flags=b2_tensileParticle | b2_fixtureContactFilterParticle;
-  d.position=b2Vec2(x,y);
-  auto pg=particleSys->CreateParticleGroup(d);
-  //dにもpgにもdencityない
-  auto mass=pg->GetMass();//グループ内の総質量
+  d.flags    = b2_tensileParticle //;
+    | b2_fixtureContactFilterParticle;
+  d.position = pos ;
+  auto pg    = particleSys->CreateParticleGroup(d);
+  //dにもpgにもdencityない,particleSysに
+  auto mass  = pg->GetMass();//グループ内の総質量
 }
 void makeFlyBox(float x,float y){
   auto d=new b2BodyDef();
@@ -181,13 +186,14 @@ void makeFlyFish(){
   //makeFlyBox(-12,12).Joint();
 }
 void makeSinglePar(float x,float y,float vx,float vy){
-  b2ParticleDef d;
-  b2ParticleColor bc(0,0,1,1);
-  d.color=bc;
-  d.velocity=V2(vx,vy);
-  d.position=V2(x,y);
-  d.flags=b2_tensileParticle;
-  auto par=particleSys->CreateParticle(d);
+  b2ParticleDef   d;
+  b2ParticleColor bc( 0 , 0 , 1 , 1 );
+  d.color    = bc;
+  d.velocity = V2(vx,vy);
+  d.position = V2(x,y);
+  d.flags    = b2_tensileParticle
+     |b2_fixtureContactFilterParticle;
+  auto par   = particleSys->CreateParticle(d);
 }
 //パーティクルを継承した KomeParticle , StreamParticle 
 //StreamParticleは水のパーティクルグループ、
@@ -204,23 +210,38 @@ void step(){
   //std::cout << particleSys->GetParticleCount() << std::endl;
   //小さいパーティクルシミュレーションのシミュレーションなら比較的大きな重力
   // b2CalculateParticleIterations helps to determine the number.
-  float hz=60.f;
-  int32 pi=b2CalculateParticleIterations(grav.y,0.06f,1/hz);
-  w->Step(1/hz,8,3,pi);
+  float hz = 60.f;
+  int32 pi =
+    b2CalculateParticleIterations( grav.y , 1 , 1/hz );
+  w->Step( 1/hz , 8 , 3 , pi );
 
-  auto fpart=w->GetParticleSystemList()->GetPositionBuffer();
+  auto fpart = w->GetParticleSystemList()->GetPositionBuffer();
 
-  for (auto bod=w->GetBodyList();bod!=nullptr;bod=bod->GetNext()){
-    auto ud=bod->GetUserData();
+  for (auto bod = w->GetBodyList() ;
+    bod != nullptr ; bod=bod->GetNext() ){
+    auto ud = bod->GetUserData();
     if(ud){
       //userdataならビット演算で区別するのが
-      auto p=bod->GetPosition();
-      auto dist=p-(*fpart);
+      auto    p= bod->GetPosition();
+      auto dist= p-(*fpart);
 //      int siz=1;
 //      glRecti(-siz,-siz,siz,siz);
     }
     //かべの描画　まあ継承でDraw呼ぶのが妥当か
     //bod->GetFixtureList()
+  }
+  auto jl  = w->GetJointList();
+  auto col = b2Color();
+  while (jl){
+    auto aa = jl->GetAnchorA();
+    auto ab = jl->GetAnchorB();
+    auto ba = jl->GetBodyA()->GetPosition();
+    auto bb = jl->GetBodyB()->GetPosition();
+    dd->DrawCircle( aa , 0.3 , col);
+    dd->DrawCircle( ab , 0.3 , col);
+    dd->DrawCircle( bb , 0.6 , col);
+    dd->DrawCircle( ba , 0.6 , col);
+    jl = jl->GetNext();
   }
   w->DrawDebugData();
 }
@@ -264,4 +285,3 @@ PhysicSystem::~PhysicSystem(){
   particleSys=nullptr;
   //http://oshiro.bpe.es.osaka-u.ac.jp/people/staff/imura/computer/OpenGL/framebuffer_object/disp_content
 }
-//float getParticlePos() //ref classで作ればどとねとにほうりこめるじゃん

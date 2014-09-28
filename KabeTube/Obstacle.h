@@ -10,13 +10,28 @@ typedef b2PolygonShape* PShape;
 typedef b2CircleShape* CShape;
 typedef b2Vec2 V2;
 //typedef System::Tuple<float,float>^ V;
+//error LNK2038 : '_ITERATOR_DEBUG_LEVEL' の不一致が検出されました。
 
+class EnemyData{
+public:
+  const char* Name=nullptr;
+  int* Damage=nullptr;
+  (void)(* PlayDamagedSound)();
+  EnemyData(int d, const char* n){
+    Damage = new int(d);
+    Name = n;
+  }
+  EnemyData(){
+  
+  }
+};
 #ifdef _MANAGED
 typedef array<float>^ Points;
 #else
 #define ref /**/
 #define Vector std::vector
 #define Points float*
+typedef EnemyData* PEnemyData;
 //typedef const Points CPoints;
 #endif
 //PhysicSystemと分けた理由
@@ -24,10 +39,6 @@ typedef array<float>^ Points;
 //  コンストラクタが多く必要になった
 //    >新しい機能を追加するごとにコンストラクタが
 ///typedef const char* string;
-struct EnemyData{
-  const char* Name;
-
-};
 ref class Obstacle
 #ifdef _MANAGED
 : IDisposable
@@ -68,6 +79,7 @@ ref class Enemy
 
   Body* tents;
   Body* sqTentacle(V2 parentPos);
+  PEnemyData* tentData;
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
   void SetPoints(Points,int);

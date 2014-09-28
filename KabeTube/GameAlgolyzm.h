@@ -2,6 +2,8 @@
 void drawClothHair(float);
 float toRad(float);
 float toDeg(float);
+//stepを外に放り出しても解決にはならない,静的保存期間があるので
+//#include "PhysicSystem.h"
 //http://manski.net/2011/04/cpp-cli-cheat-sheet/
 //CLIかどうか知るには、他にもチートシートが
 #ifdef _MANAGED
@@ -12,6 +14,7 @@ typedef System::String^ string;
 typedef array<string>^ stringArray;
 #define PPhysicSystem PhysicSystem^
 #else
+//include使わないための必死の策
 #define Vector std::vector
 #define Points float*
 #define PPhysicSystem PhysicSystem*
@@ -22,10 +25,11 @@ typedef array<string>^ stringArray;
 //Obstacle,rendererにもある、スクリプト対処か
 #define ref /**/
 #endif
+typedef unsigned int uint;
 namespace Assets{
   Points getSquidPoints();
   int squidPLen();
-  Points getSquidElem();
+  uint* getSquidElem();
 }
 Points svgRead(String);
 float bej(float t);

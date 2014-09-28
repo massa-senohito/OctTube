@@ -137,37 +137,6 @@ Renderer::Renderer(Callback c)
   float one=1.0;
   float zero=0.0;
   glClearColor(zero, zero, zero,one);
-#if defined(WIN32)
-  /* GLEW の初期化 */
-  GLenum err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-    exit(1);
-  }
-  if(GLEW_ARB_point_parameters){
-    ;
-  }
-#endif
-  glutInitContextFlags(GLUT_FORWARD_COMPATIBLE
-#if _DEBUG
-        | GLUT_DEBUG
-#endif
-  );
-  isErr("",__LINE__);
-  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-  isErr("",__LINE__);
-  glDebugMessageCallback(
-    //reinterpret_cast<
-     (GLDEBUGPROC)
-    //>
-    ( debugCall),nullptr);
-  glDebugMessageControl(GL_DONT_CARE,
-    GL_DONT_CARE,
-    GL_DONT_CARE,
-    0,
-    ignoreId,
-    true);
-  isErr("",__LINE__);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   GLenum tex2d=GL_TEXTURE_2D;
@@ -327,7 +296,6 @@ void onDrag(int x,int y){
   ry=180.0/480.0*y-90.0;
 
 }
-//void 
 void specialkey(int key,int x,int y){
 
   float32 del=0.01f;//todo GLCTestと同じ使用にする
@@ -366,23 +334,23 @@ void SpecialKeyUp(int key,int,int){
   if(key==GLUT_KEY_CTRL_L) 
       Key::pushed[Key::A]=false;
 }
-void renderVertice(Points ps,int len){
+void renderVertice(Points ps,int len,int anim){
 #ifdef _MANAGED
   int pl=ps->Length;
 #else
-  int pl=len;
-  auto verts=Vector<float>(len);
-
+  int pl=anim*len+len;
+  //auto verts=Vector<float>(len);
+  
 #endif
-  for (int i = 0; i < pl; i+=2)
+  for (int i = anim*len; i < pl; i+=2)
   {
 #ifdef _MANAGED
     int psi = ps[i];
 #else
     auto psi = ps[i];
     auto psi1 = ps[i+1];
-    verts[i]=(psi);
-    verts[i+1]=(psi1);
+    //verts[i]=(psi);
+    //verts[i+1]=(psi1);
 #endif
     glVertex2f( psi-59,psi1-90);
     //glVertex2f( psi,psi1);
@@ -403,6 +371,7 @@ void GLUT_CALL_FUNCs()
   glutSpecialFunc(specialkey);
   glutSpecialUpFunc(SpecialKeyUp); //キーを離した時の処理
   //glutJoystickFunc(joyStick,10);
+  //glutCloseFunc
 }
 void GLUT_INITs(int argcp,char**argvp)
 {
@@ -410,13 +379,42 @@ void GLUT_INITs(int argcp,char**argvp)
   glutInitDisplayMode(GLUT_RGBA| GLUT_DOUBLE | GLUT_DEPTH |GLUT_STENCIL);
   glutInitWindowSize(640,480);
   glutCreateWindow("Basic Walking Around without KeyRepeat");
-  //glsl使えるようにwgl呼んだらいけるかも
   //  std::cout << "Vendor :"<<glGetString(GL_VENDOR)<<'\n';
   //std::cout << "GPU : "<<glGetString(GL_RENDERER) <<'\n';
   //std::cout << "OpenGL ver. " <<glGetString(GL_VERSION)<<'\n';
   //std::cout << "【拡張機能一覧】"<<std::endl;
   //std::cout << glGetString(GL_EXTENSIONS) <<std::endl;
 
+#if defined(WIN32)
+  /* GLEW の初期化 */
+  GLenum err = glewInit();
+  if (err != GLEW_OK) {
+    fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+    exit(1);
+  }
+  if(GLEW_ARB_point_parameters){
+    ;
+  }
+#endif
+  glutInitContextFlags(GLUT_FORWARD_COMPATIBLE
+#if _DEBUG
+        | GLUT_DEBUG
+#endif
+  );
+  isErr("",__LINE__);
+  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  isErr("",__LINE__);
+  glDebugMessageCallback(
+    //reinterpret_cast<
+     (GLDEBUGPROC)
+    //>
+    ( debugCall),nullptr);
+  glDebugMessageControl(GL_DONT_CARE,
+    GL_DONT_CARE,
+    GL_DONT_CARE,
+    0,
+    ignoreId,
+    true);
   //MakeFloor(vec3(0,3,0),10,floormat);
   GLUT_CALL_FUNCs();
 }

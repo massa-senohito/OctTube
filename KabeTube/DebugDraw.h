@@ -43,27 +43,27 @@ void drawRect(const b2Vec2 centers, const b2ParticleColor colors){
 void DebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color){
   glBegin(GL_LINE_LOOP);
   //数で場合分けして上手く三角分割もできるが面倒だしいいや
-  glColor3f(1,0,0);
+  glColor3f( 1 , 0 , 0 );
   for (int i = 0; i < vertexCount; i++)
   {
-    auto v=vertices[i];
+    auto v = vertices[i];
     glVertex2f(vdec(v));
   }
   glEnd();
 }
 
 void DebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color){
-  DrawPolygon(vertices,vertexCount,color);
+  DrawPolygon( vertices , vertexCount , color );
 }
 
 /// DebugDraw::Draw a circle.
 void DebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {;
-  const float32 k_segments = 16.0f;
+  const float32 k_segments  = 16.0f;
   const float32 k_increment = 2.0f * b2_pi / k_segments;
-  float32 theta = 0.0f;
-  glColor3f(color.r, color.g, color.b);
+  float32 theta             = 0.0f;
+  glColor3f( color.r , color.g , color.b );
   glBegin(GL_LINE_LOOP);
-  for (int32 i = 0; i < k_segments; ++i)
+  for (int32 i = 0 ; i < k_segments ; ++i)
   {
     b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
     glVertex2f(v.x, v.y);
@@ -74,15 +74,15 @@ void DebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& 
 }
 /// DebugDraw::Draw a solid circle.
 void DebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {;
-  DrawCircle(center,radius,color);
+  DrawCircle( center , radius , color );
 }
 /// DebugDraw::Draw a particle array
 void DebugDraw::DrawParticles(const b2Vec2 *centers, float32 radius, const b2ParticleColor *colors, int32 count) {;
   for (int i = 0; i < count; i++)
   {
-    auto c=colors[i];
+    auto c = colors[i];
     //マスク使って背景を波にすればちょっと幻想的な
-    DrawCircle(centers[i],radius,b2Color(c.r,c.g,c.b ));
+    DrawCircle( centers[i] , radius , b2Color(c.r,c.g,c.b ));
   }
 }
 /// DebugDraw::Draw a line segment.

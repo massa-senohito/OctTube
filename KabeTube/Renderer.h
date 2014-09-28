@@ -5,7 +5,7 @@ typedef std::function<void(int)> Callback;
 
 #define Vector std::vector
 #define Points float*
-void renderVertice(Points ps,int len);
+void renderVertice(Points ps,int len,int);
 class Renderer
 {
 public:

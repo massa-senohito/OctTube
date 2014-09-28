@@ -113,7 +113,7 @@ void disp( void ) {
   */
   glScalef(scale,scale,0);
   glBegin(es[ei]);
-  renderVertice(ps,Assets::squidPLen());
+ // renderVertice(ps,Assets::squidPLen());
   glEnd();
   glFlush();
 }
@@ -122,9 +122,9 @@ void key(int key,int,int){
   if(es[ei]==-1)ei=0;
 }
 void timert(int value) {
-	//glRotatef(1 , 0.5 , 1 , 0.25);
-	glutPostRedisplay();
-	glutTimerFunc(50 , timert , 0);
+  //glRotatef(1 , 0.5 , 1 , 0.25);
+  glutPostRedisplay();
+  glutTimerFunc(50 , timert , 0);
 }
 int texTest(int argc , char ** argv){
   GLubyte bits[TEXSIZE][TEXSIZE][3];
@@ -159,15 +159,20 @@ int texTest(int argc , char ** argv){
   glutMainLoop();
   return 0;
 }
-
+GameAlgolyzm* ga;
 void kabeMain(const char* args){
   auto ar = Vector<std::string>();
-  ar.push_back(std::string( args));
-  auto ga=GameAlgolyzm(ar);
+  ar.push_back(std::string( args ));
+  ga = new GameAlgolyzm( ar );
 }
+
+void quitF(){
+  delete ga;  //なぜかよばれない,delete2回入って異常終了可能性
+}//glutExitFuncでブレーク追いかけよう
 int main(int argc,char* argv[])
 {
   try{
+    atexit(quitF);
     //texTest(0,nullptr);
     kabeMain(argv[0]);
   }catch

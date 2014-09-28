@@ -35,10 +35,7 @@ void widheiInit(int width,int height){
     }
   }
 }
-
-///テストのためのグラフィックパターンテクスチャを生成する
-Texture::Texture(void)
-{
+void Texture::makeTestTex(){
   bitsInit();
   glGenTextures(1 , &texName);
   glBindTexture(GL_TEXTURE_2D , texName);
@@ -58,6 +55,10 @@ Texture::Texture(void)
   //  0 , GL_RGB , GL_UNSIGNED_BYTE , bits
   //);
   widheiInit(300,200);
+}
+///テストのためのグラフィックパターンテクスチャを生成する
+Texture::Texture(void)
+{
   //Shader texShader("textured.vert","textured.frag");
 }
 void inline bind2d(GLuint n){

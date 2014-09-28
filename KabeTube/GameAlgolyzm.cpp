@@ -2,7 +2,8 @@
 #include "GameAlgolyzm.h"
 #include "PhysicSystem.h"
 #include "Renderer.h"
-//#include <sstream>
+
+
 #ifndef _MANAGED
 namespace File{
   stringArray* ReadAllLines(String name){
@@ -30,6 +31,7 @@ namespace Convert{
     return atof(str);
 	}
 }
+PPhysicSystem sys;//managedなので外に置けない
 #endif
 float toRad(float ang){return ang/180*3.141592f;}
 float toDeg(float deg){return deg*180/3.141592f;}
@@ -42,13 +44,13 @@ void drawClothHair(float angle){
 }
 namespace Assets{
   Points squid;
-  Points squidElem;//テンプレートメタプログラミングで最適化が望めるが、ここではやらんでおく
-  int squidLen;
+  uint*  squidElem;//テンプレートメタプログラミングで最適化が望めるが、ここではやらんでおく
+  int    squidLen;
 
   Points getSquidPoints(){
     return ( squid);
   }
-  Points getSquidElem(){
+  uint* getSquidElem(){
     return squidElem;
   }
   int squidPLen(){
@@ -56,12 +58,12 @@ namespace Assets{
   }
   //後ほどクラスに移動する
   Points tako;
-  Points takoElem;
-  int takoLen;
+  uint*  takoElem;
+  int    takoLen;
   Points getTakoPoints(){
     return tako;
   }
-  Points getTakoElem(){
+  uint* getTakoElem(){
     return takoElem;
   }
   int getTakoLen(){
@@ -80,7 +82,7 @@ let bejx xx xxx t=
 const float onef = 1.0f;
 float bej(float t){
   return 3.0f * (onef - t)*(onef - t)*t *
-    onef *3.0f*t*t*(onef - t)*onef + t*t*t;
+    onef * 3.0f * t * t *(onef - t)  * onef + t*t*t;
 }
 //typedef std::basic_istringstream<char> istringstream;
 //using vector<T>=std::vector<T>;
@@ -94,18 +96,18 @@ std::vector<std::string> Split(std::string str, char delim){
 float strTofloat(std::string str){
     return Convert::ToSingle(str.c_str());
 }
-int siz = 0;
+uint siz = 0;
 void makeDragon(PPhysicSystem sys,stringArray coes ){
   //縦に動く,x10y12に初期値から加速度20で移動,（こげやすさ
-  auto name=coes[0];
-  auto pat=coes[1];
-  float x=strTofloat( coes[2]);
-  float y=strTofloat( coes[3]);
+  auto name = coes[0];
+  auto pat  = coes[1];
+  auto x    = strTofloat( coes[2]);
+  auto y    = strTofloat( coes[3]);
   if(pat=="vmove"){
     
   }
   //-16,11でとばす
-  auto enemy=sys->addEnemy(-32,0,1);
+  auto enemy = sys->addEnemy(-32,0,1);
   
   enemy->Impulse(V2(6,11));
   auto ps = Assets::getSquidPoints();
@@ -184,12 +186,12 @@ void fileRead(String filename,PPhysicSystem sys){
 #endif
    std::string name=coefar[0]; 
    if(name=="Cube"){
-     float x = strTofloat(coefar[1]);
-     auto  y = strTofloat(coefar[2]);
-     auto  z = strTofloat(coefar[3]);
-     auto  sx= strTofloat(coefar[4]);
-     auto  sy= strTofloat(coefar[5]);
-     auto  sz= strTofloat(coefar[6]);
+     auto x = strTofloat(coefar[1]);
+     auto y = strTofloat(coefar[2]);
+     auto z = strTofloat(coefar[3]);
+     auto sx= strTofloat(coefar[4]);
+     auto sy= strTofloat(coefar[5]);
+     auto sz= strTofloat(coefar[6]);
      //fence(x,y,z,sx,sy,sz,0.0f);
      sys->addFence(x,y,sx,sy);
    }
@@ -208,18 +210,23 @@ float angle=float(90);
 float posx = 29; float posy = -18.5f;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
-
 void onRenderFrame(int time){
-  int movableF=2;
-  float power=18;
+  int movableF = 2;
+  float power  = 18;
   //if(c%50==0){makeParticle(pos);}
   //stepできるようになったので
+  sys->Step();
 
   //クリップ範囲から離れてしまう
-  glTranslatef(posx+30, posy-60,0.0f);
+  glTranslatef( posx + 30 , posy - 60 , 0.0f );
   glRotatef(180, 1, 0, 0);
   glBegin(GL_LINES);
-  renderVertice(Assets::tako, Assets::takoLen);
+
+  static bool state = false;
+  const int animLen = 38;
+  if (time % animLen == 0) state = !state;
+  int anim = state ? time % animLen : animLen - time % animLen;
+  renderVertice( Assets::tako , Assets::takoLen , anim/2 );
   glEnd();
   //たこの触手をキーで動かせるが、足はベジエカーブを移動させればそれなりの見栄えになるみたい
   //drawClothHair(angle);
@@ -230,8 +237,7 @@ void onRenderFrame(int time){
       float vx=cos(toRad(angle));
       float vy=sin(toRad(angle));
       makeSinglePar
-        (//pos
-        posx,posy,vx*power,vy*power);
+        ( posx , posy , vx*power , vy*power );
       lastFiredFrame=time;
     }
   }
@@ -260,39 +266,38 @@ void onRenderFrame(int time){
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
-  auto path = args[0];
-  auto lastBel=path.find_last_of('\\');
-  path = path.substr(0,lastBel);
-  Assets::squid= svgRead((path+"\\allFlame").data());
-  Assets::squidLen = siz;
-  Assets::squidElem = gcnew float[siz];
+  auto path    = args[0];
+  auto lastBel = path.find_last_of('\\');
+  path         = path.substr(0,lastBel);
+  Assets::squid     = svgRead((path+"\\allFlameOld").data());
+  Assets::squidLen  = siz;
+  Assets::squidElem = gcnew uint[siz];
   for (size_t i = 0; i < siz; i++)
   {
     Assets::squidElem[i] = i;
   }
-  Assets::tako = svgRead((path+"\\takoallFlame").data());
-  Assets::takoLen= siz;
-  Assets::takoElem = gcnew float[siz];
+  Assets::tako     = svgRead((path+"\\takoallFlame").data());
+  Assets::takoLen  = siz;
+  Assets::takoElem = gcnew uint[siz];
   for (size_t i = 0; i < siz; i++)
   {
     Assets::takoElem[i] = i;
   }
 
-  auto sys=gcnew PhysicSystem();
+  int len = 0; //(args->Length);
+  //glewInit呼ばないといけないので
+  GLUT_INITs(len ,nullptr);
+  sys = gcnew PhysicSystem();
   sys->MakeParticle(pos);
   //char ** arg= strMap(args);//opentkだと？
-  int len = 0; //(args->Length);
-  GLUT_INITs(len ,nullptr);
   ///drawable,steppable作るべき
   auto csv = path+"\\coe.csv";
   std::cout << csv<< std::endl;;
   fileRead(csv.data(),sys);
 
-  Renderer rend([&sys](int count){
-    sys->Step();
+  Renderer rend([](int count){
     onRenderFrame(count);
-  }
-  );
+  });
   //char* c=toCp(ar[0]);
   //auto g=new GUIUtil();
   //splitTest();
@@ -335,4 +340,5 @@ GameAlgolyzm::~GameAlgolyzm(void)
   delete[] Assets::squidElem;
   delete[] Assets::tako;
   delete[] Assets::takoElem;
+  delete sys;
 }
