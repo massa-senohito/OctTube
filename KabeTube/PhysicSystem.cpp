@@ -104,7 +104,6 @@ void PhysicSystem::makeOuterFence(int x,int y){
 
 PhysicSystem::PhysicSystem(void)
 {
-  string csv("a,b");
   //toi=タイムオブインパクトｚｃ
   w=new b2World(grav);
   

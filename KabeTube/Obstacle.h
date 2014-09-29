@@ -1,5 +1,6 @@
 #pragma once
 #include "Box2D\Box2D.h"
+#include "Enemy.h"
 typedef b2ParticleSystemDef* PDef ;
 typedef b2ParticleSystem* PSys;
 typedef b2World* World;
@@ -76,13 +77,15 @@ ref class Enemy
   int pointsLength;
   void squidProfile(World,V2);
   void motion();
-
+  AnimAsset* anim;
+  SoundAsset* sound;
   Body* tents;
   Body* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
-  void SetPoints(Points,int);
+  //void SetPoints(Points,int);
+  void SetAssets(int kind);
   ~Enemy();
   //EnemyData GetEnemyData();
   int Age;
@@ -93,4 +96,3 @@ public:
   Body GetBody();
   void Update();
 };
-//listÇ…ä«óùÇ≥ÇπÇƒflyweightçÏÇÍÇÈÇØÇ«ÇﬂÇÒÇ«Ç¢

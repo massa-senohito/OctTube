@@ -25,6 +25,11 @@ typedef array<string>^ stringArray;
 //Obstacle,rendererにもある、スクリプト対処か
 #define ref /**/
 #endif
+
+//https://github.com/cocos2d/cocos2d-x/blob/v3/cocos/platform/CCPlatformMacros.h
+#define SAFE_DELETE(p)           do { if(p) { delete (p); (p) = nullptr; } } while(0)
+#define SAFE_DELETE_ARRAY(p)     do { if(p) { delete[] (p); (p) = nullptr; } } while(0)
+#define DA(p) SAFE_DELETE_ARRAY(p)
 typedef unsigned int uint;
 namespace Assets{
   Points getSquidPoints();
@@ -32,6 +37,7 @@ namespace Assets{
   uint* getSquidElem();
 }
 Points svgRead(String);
+uint getSvgVLen();
 float bej(float t);
 class GameAlgolyzm
 {

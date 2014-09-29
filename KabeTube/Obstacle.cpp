@@ -2,7 +2,6 @@
 #include "Obstacle.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
-#include "Enemy.h"
 SoundAsset* squidAsset;
 void playSquidDamageSound(){
   squidAsset->PlayDamageSound();
@@ -190,10 +189,15 @@ void Enemy::Force(V2 v)
 void Enemy::Veloc(V2 v){
   body->SetLinearVelocity(v);
 }
-void Enemy::SetPoints(Points p,int len){
-  points=p;
-  pointsLength=len;
+//void Enemy::SetPoints(Points p,int len){
+//  points=p;
+//  pointsLength=len;
   //Asset‚ªelem 
+//}
+void Enemy::SetAssets(int kind){
+  auto kin = static_cast<EnemyKind>(kind);
+  anim = new AnimAsset(kin);
+  sound = new SoundAsset(kin);
 }
 enum Moving{
   R,
@@ -298,10 +302,11 @@ void Enemy::Update(){
       squidAsset->PlayMovingSound();
     }
   }
-  int anim = state ? Age % animLen : animLen - Age % animLen;
-  animAsset->DamageColor(*e->Damage);//‘«‚È‚Ç‚ÉŒÂ•Ê‚É‚Í•\Ž¦‚Å‚«‚È‚¢
-  renderVertice( points , pointsLength , anim/2 );
-  animAsset->NoUse();
+  int animFl = state ? Age % animLen : animLen - Age % animLen;
+  anim->DamageColor(*e->Damage);//‘«‚È‚Ç‚ÉŒÂ•Ê‚É‚Í•\Ž¦‚Å‚«‚È‚¢
+  //renderVertice( points , pointsLength , animFl/2 );
+  anim->UpdateAnim(true);
+  anim->NoUse();
   glEnd();
   glLoadIdentity();
   //return pos;

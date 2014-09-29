@@ -35,6 +35,16 @@ GLuint vao(GLuint vbid){
   glBindBuffer(GL_ARRAY_BUFFER, vbid);
   return vao;
 }
+GLuint* vaAnimes(GLuint* vbis,GLuint flame){
+  GLuint* bufs=new GLuint[flame];
+  glGenVertexArrays(flame, bufs);
+  for (size_t i = 0; i < flame; i++)
+  {
+    glBindVertexArray(bufs[i]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbis[i] );
+  }
+  return bufs;
+}
 //https://github.com/progschj/OpenGL-Examples/blob/master/03texture.cpp
 //void uniform1(){
 //  glUniform1f(gl
@@ -133,9 +143,9 @@ void vertAttPointer(GLuint p,GLsizei stride,const void* pointer){
 //一度送ってやれば頂点バッファオブジェクトに記憶されるのでそれ以降はrenderでvboよぶだけでおｋ
 void Shader::SendVert(float* p,int size,GLuint* inds){
   esize = size / 2;
-  vb=vbo(p,sizeof(float)* size);
+  vbs=vertexAnimes(p,sizeof(float)* size,20);
   eb=ebo(inds, esize);
-  va=vao(vb);
+  vas=vaAnimes(vbs,20);
 }
 void sendFace(float *p){
 }
@@ -149,7 +159,7 @@ void Shader::Use(bool isuse){
 //http://www57.atwiki.jp/gametips/pages/29.html
 //によればfloatぽいんた一つにまとめるようなことができる
 void Shader::Render(int anim){
-  glBindVertexArray(va);
+  glBindVertexArray(vas[anim]);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
   glDrawElements(GL_TRIANGLES, esize, GL_UNSIGNED_INT, 0);
 }

@@ -1,19 +1,25 @@
 #pragma once
-typedef unsigned int ALuint;
 #include "Shader.h"//pimplにできる
+typedef unsigned int ALuint;
+#define Points float*
 enum EnemyKind{
-  Squid,Dragon
+  Squid,Dragon,Len,
 };
-
+namespace Path{
+  void setPass(std::string);
+}
+//インスタンス作るより、AnimAssets[Squid]で取り出せるほうが
 class AnimAsset{
-  //Points vertice;
-  //uint* elem;
+  Points vertice;
+  uint* elem;
   int vertLen;
   int count;
   Shader* shader;
 public:
   void UpdateAnim(bool);
-  AnimAsset(EnemyKind);
+  AnimAsset(EnemyKind); //
+
+  void SetPoints(Points,int);
   void DamageColor(float HP);
   void NoUse();
   ~AnimAsset();

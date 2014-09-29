@@ -3,7 +3,10 @@
 #include "PhysicSystem.h"
 #include "Renderer.h"
 
-
+uint svgVLength;
+uint getSvgVLen(){
+  return svgVLength;
+}
 #ifndef _MANAGED
 namespace File{
   stringArray* ReadAllLines(String name){
@@ -33,6 +36,7 @@ namespace Convert{
 }
 PPhysicSystem sys;//managedなので外に置けない
 #endif
+
 float toRad(float ang){return ang/180*3.141592f;}
 float toDeg(float deg){return deg*180/3.141592f;}
 void drawClothHair(float angle){
@@ -96,7 +100,6 @@ std::vector<std::string> Split(std::string str, char delim){
 float strTofloat(std::string str){
     return Convert::ToSingle(str.c_str());
 }
-uint siz = 0;
 void makeDragon(PPhysicSystem sys,stringArray coes ){
   //縦に動く,x10y12に初期値から加速度20で移動,（こげやすさ
   auto name = coes[0];
@@ -111,10 +114,10 @@ void makeDragon(PPhysicSystem sys,stringArray coes ){
   
   enemy->Impulse(V2(6,11));
   auto ps = Assets::getSquidPoints();
-  enemy->SetPoints(ps,Assets::squidPLen());
+  enemy->SetAssets(Squid); //
+  //enemy->SetPoints(ps,Assets::squidPLen());
 }
 #define Path SvgFs::Loader::Path 
-//using namespace SvgFs;
 
 Points svgRead(String name){
   /*  M始点 C 点 前の点　コントロールポイント 次の点
@@ -140,20 +143,20 @@ Points svgRead(String name){
   auto e = fopen_s(&p, name, "rb");
   if (e == 0){
     int flamenum = 0;
-    siz = 0;
+    svgVLength= 0;
     int count = 0;
     size_t t = 1;
     fread(&flamenum, sizeof(int), (size_t)1, p);
-    fread(&siz, sizeof(int), (size_t)1, p);
+    fread(&svgVLength, sizeof(int), (size_t)1, p);
     //freadするために1次元
-    auto tmp = new float[(flamenum*siz)];
+    auto tmp = new float[(flamenum*svgVLength)];
     //auto tes = new float[flamenum][442];
     while (t != 0){
-      tmp; //->push(new float[siz]);
+      tmp; //->push(new float[svgVLength]);
       t = fread(
-        &tmp[count*siz]
+        &tmp[count*svgVLength]
         //tes[count]
-        , sizeof(float), (size_t)siz, p);
+        , sizeof(float), (size_t)svgVLength, p);
       ++count;
       //t=0;
     }
@@ -269,17 +272,18 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   auto path    = args[0];
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel);
-  Assets::squid     = svgRead((path+"\\allFlameOld").data());
-  Assets::squidLen  = siz;
-  Assets::squidElem = gcnew uint[siz];
-  for (size_t i = 0; i < siz; i++)
-  {
-    Assets::squidElem[i] = i;
-  }
+
+  //Assets::squid     = svgRead((path+"\\allFlameOld").data());
+  //Assets::squidLen  = siz;
+  //Assets::squidElem = gcnew uint[siz];
+  //for (size_t i = 0; i < siz; i++)
+  //{
+  //  Assets::squidElem[i] = i;
+  //}
   Assets::tako     = svgRead((path+"\\takoallFlame").data());
-  Assets::takoLen  = siz;
-  Assets::takoElem = gcnew uint[siz];
-  for (size_t i = 0; i < siz; i++)
+  Assets::takoLen  = svgVLength;
+  Assets::takoElem = gcnew uint[svgVLength];
+  for (size_t i = 0; i < svgVLength; i++)
   {
     Assets::takoElem[i] = i;
   }
@@ -336,9 +340,9 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
-  delete[] Assets::squid;
-  delete[] Assets::squidElem;
-  delete[] Assets::tako;
-  delete[] Assets::takoElem;
-  delete sys;
+  DA ( Assets::squid);
+  DA ( Assets::squidElem);
+  DA ( Assets::tako);
+  DA ( Assets::takoElem);
+  SAFE_DELETE( sys );
 }

@@ -4,6 +4,9 @@
 #include "AL\alc.h"
 #include "Enemy.h"
 std::string path = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Projects\\OctTube\\Debug\\";
+void Path::setPass(std::string p){
+  path = p;
+}
 void AnimAsset::UpdateAnim(bool update){
   if ( update ) ++count;
   shader->Render(count);
@@ -12,6 +15,14 @@ AnimAsset::AnimAsset(EnemyKind){
   auto vs = path + "squid.vs";
   auto fs = path + "squid.fs";
   shader = (new Shader(vs.data(), fs.data()));
+  vertice = svgRead((path + "\\allFlame").data());
+  vertLen = getSvgVLen();
+  elem = new uint[vertLen];
+  for (size_t i = 0; i < vertLen; i++)
+  {
+    elem[i] = i;
+  }
+  shader->SendVert(vertice, vertLen, elem);
   //ステンシルテストで落ちたらシェーダーの影響受けないはず
   //頂点シェーダはかかるはずなので、x/2
 }
@@ -23,7 +34,7 @@ void AnimAsset::NoUse(){
   shader->Use(false);
 }
 AnimAsset::~AnimAsset(){
-  delete shader;
+  SAFE_DELETE( shader);
 }
 
 //http://www-fps.nifs.ac.jp/ito/memo/openal02.html
@@ -166,5 +177,5 @@ SoundAsset::~SoundAsset()
 {
   alDeleteSources(2, sources);
   alDeleteBuffers(2, bufs);
-  delete[] bufs;
+  SAFE_DELETE_ARRAY( bufs);
 }

@@ -9,7 +9,8 @@ ref class Shader
     int fsid;
     int pid;
     int esize;
-    uint vb, eb, va;
+    uint* vbs,* vas;
+    uint eb;
     //map<string,atr>
 public:
     Shader(string vs,string fs);
