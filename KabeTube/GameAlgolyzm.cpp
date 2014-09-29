@@ -267,6 +267,7 @@ void onRenderFrame(int time){
     }
   }
 }
+Renderer* rend;
 GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
   auto path    = args[0];
@@ -299,16 +300,18 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   std::cout << csv<< std::endl;;
   fileRead(csv.data(),sys);
 
-  Renderer rend([](int count){
+  rend=new Renderer([](int count){
     onRenderFrame(count);
-  });
+  }
+  , [&](){delete this; }
+  );
   //char* c=toCp(ar[0]);
   //auto g=new GUIUtil();
   //splitTest();
   //True‚É‚È‚é
   //Console::WriteLine(arg[0]);
   //std::cout << (arg[0])<< std::endl;;
-  rend.renderPolygon(nullptr,0);
+  rend->renderPolygon(nullptr,0);
   glutMainLoop();
 }
 bool 
@@ -340,6 +343,7 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
+  SAFE_DELETE(rend);
   DA ( Assets::squid);
   DA ( Assets::squidElem);
   DA ( Assets::tako);

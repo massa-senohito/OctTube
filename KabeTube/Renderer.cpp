@@ -128,12 +128,13 @@ void gluiInit(){
   ui->addSpinner("pradius",&pradius);
 }
 static const GLuint ignoreId[]={0};
-Callback drawCall;
+RenderCallback drawCall;
 Texture* testTex;
-
-Renderer::Renderer(Callback c)
+Callback onClose;
+Renderer::Renderer(RenderCallback c,Callback close)
 {
   drawCall=c;
+  onClose = close;
   float one=1.0;
   float zero=0.0;
   glClearColor(zero, zero, zero,one);
@@ -358,6 +359,9 @@ void renderVertice(Points ps,int len,int anim){
 }
 void idle(){
 }
+void cl(){
+  onClose();
+}
 void GLUT_CALL_FUNCs()
 {
   //gluiÇ∆éÊÇËçáÇ¢Ç…Ç»ÇÈÇÁÇµÇ¢ÇÃÇ≈
@@ -371,7 +375,7 @@ void GLUT_CALL_FUNCs()
   glutSpecialFunc(specialkey);
   glutSpecialUpFunc(SpecialKeyUp); //ÉLÅ[Çó£ÇµÇΩéûÇÃèàóù
   //glutJoystickFunc(joyStick,10);
-  //glutCloseFunc
+  glutCloseFunc(cl);
 }
 void GLUT_INITs(int argcp,char**argvp)
 {

@@ -19,7 +19,7 @@ public:
     void Attloc(string);
     void Use(bool);
     void Render(int anim);
-
+    void VaoRender(int anim);
     void Uniform(string uniName,float v);
     //void Render
 };

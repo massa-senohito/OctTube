@@ -159,9 +159,14 @@ void Shader::Use(bool isuse){
 //http://www57.atwiki.jp/gametips/pages/29.html
 //‚É‚æ‚ê‚Îfloat‚Û‚¢‚ñ‚½ˆê‚Â‚É‚Ü‚Æ‚ß‚é‚æ‚¤‚È‚±‚Æ‚ª‚Å‚«‚é
 void Shader::Render(int anim){
+  //‚¹‚Á‚©‚­‚¾‚¯‚Ç’¸“_ƒJƒ‰[‚Å•`‰æ‚µ‚æ‚¤
+
+}
+void Shader::VaoRender(int anim){
   glBindVertexArray(vas[anim]);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
   glDrawElements(GL_TRIANGLES, esize, GL_UNSIGNED_INT, 0);
+
 }
 void Shader::Attloc(string attname){
   GLuint l=glGetAttribLocation(pid,attname);

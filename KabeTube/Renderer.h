@@ -1,7 +1,8 @@
 #pragma once
 void GLUT_INITs(int,char**);
-//typedef void(* Callback)( int) ;
-typedef std::function<void(int)> Callback;
+//typedef void(* Callback)() ;
+typedef std::function<void(int)> RenderCallback;
+typedef std::function<void(void)> Callback;
 
 #define Vector std::vector
 #define Points float*
@@ -10,7 +11,7 @@ class Renderer
 {
 public:
 
-    Renderer(Callback);
+    Renderer(RenderCallback,Callback);
     GLenum renderPolygon(GLvoid* vert,int length);
     // V2 pos,float scale,float angle
     ~Renderer(void);
