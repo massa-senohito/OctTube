@@ -314,17 +314,6 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   rend->renderPolygon(nullptr,0);
   glutMainLoop();
 }
-bool 
-  isAllMeatFired ()//ms=
-  {
-    int length=0;//
-    
-    for (int i = 0; i < length; i++)
-    {
-      return false;
-    }
-    return true;
-}
 ///ƒNƒŠƒA•X‰Ù
 float howAllMeatFired()// ms
 {

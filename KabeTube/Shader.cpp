@@ -142,6 +142,8 @@ void vertAttPointer(GLuint p,GLsizei stride,const void* pointer){
 }
 //一度送ってやれば頂点バッファオブジェクトに記憶されるのでそれ以降はrenderでvboよぶだけでおｋ
 void Shader::SendVert(float* p,int size,GLuint* inds){
+  points = p;
+  indexs = inds;
   esize = size / 2;
   vbs=vertexAnimes(p,sizeof(float)* size,20);
   eb=ebo(inds, esize);
@@ -158,14 +160,31 @@ void Shader::Use(bool isuse){
 ///頂点バッファからシェーダへ贈るのに必要、ポインタはバッファの先頭から最初の属性までのオフセット
 //http://www57.atwiki.jp/gametips/pages/29.html
 //によればfloatぽいんた一つにまとめるようなことができる
+#define Vector std::vector
+
 void Shader::Render(int anim){
   //せっかくだけど頂点カラーで描画しよう
-
+  //glEnableClientState(GL_VERTEX_ARRAY);
+  //glVertexPointer(2, GL_FLOAT, 0, &points[anim*esize*2]);
+  //glDrawElements(GL_LINES, esize, GL_UNSIGNED_INT, indexs);
+  int len = esize * 2;
+  int pl=anim*len+len;
+  auto verts=Vector<float>(len);
+  for (int i = anim*len; i < pl; i+=2)
+  {
+    auto ai = i - anim*len;
+    auto psi  = points[i];
+    auto psi1 = points[i+1];
+    verts[ai]=(psi);//とりあえず260
+    verts[ai+1]=(psi1);
+    glVertex2f( psi-59,psi1-90);//vaoは移動させてないからだ
+    //glVertex2f( psi,psi1);
+  }
 }
 void Shader::VaoRender(int anim){
   glBindVertexArray(vas[anim]);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
-  glDrawElements(GL_TRIANGLES, esize, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_LINES, esize, GL_UNSIGNED_INT, 0);
 
 }
 void Shader::Attloc(string attname){

@@ -7,9 +7,9 @@ std::string path = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Pr
 void Path::setPass(std::string p){
   path = p;
 }
-void AnimAsset::UpdateAnim(bool update){
-  if ( update ) ++count;
-  shader->Render(count);
+void AnimAsset::UpdateAnim(int flame){
+  //if ( update ) ++count;
+  shader->Render(flame);
 }
 AnimAsset::AnimAsset(EnemyKind){
   auto vs = path + "squid.vs";

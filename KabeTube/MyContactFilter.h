@@ -8,6 +8,7 @@ class MyContactFilter :
     public b2ContactFilter
 {
 public:
+  int StoppingFlame;
     MyContactFilter(void);
     bool ShouldCollide(b2Fixture*,b2Fixture*);
     bool ShouldCollide(b2Fixture*,PSys,int32);

@@ -82,6 +82,7 @@ ref class Enemy
   Body* tents;
   Body* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
+  bool isAllMeatFired();
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
   //void SetPoints(Points,int);
@@ -94,5 +95,5 @@ public:
   void Veloc(V2 v);
 
   Body GetBody();
-  void Update();
+  void Update(bool);
 };

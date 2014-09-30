@@ -105,8 +105,9 @@ PShape sqTentShape(V2& pos,fl ang){
   return s;
 }
   //enemydata,body—˜—p‚µ‚Ä‚é‚Ì‚Å‡”Ô‚É’ˆÓ
+const int tentacleCount = 3;
 Body* Enemy::sqTentacle(V2 parentPos){
-  auto bods   = new Body[3];//shape‚É’Ç‰Á‚·‚ê‚Î‚¢‚¢‚ñ‚¶‚á‚È‚¢
+  auto bods   = new Body[tentacleCount];//shape‚É’Ç‰Á‚·‚ê‚Î‚¢‚¢‚ñ‚¶‚á‚È‚¢
   auto underp = parentPos + V2(31, -20);
   auto street =sqTentShape(underp, 0);
   auto le     =sqTentShape(underp+V2( 7.1 , 2) ,-5.7);
@@ -279,10 +280,24 @@ void Enemy::motion(){
     if( mov == TL ) mov = L; else mov = R;
   }
 }
-void Enemy::Update(){
+
+bool 
+  Enemy::isAllMeatFired ()//ms=
+  {
+    int length=0;//
+    auto dam =* e->Damage;
+    for (int i = 0; i < tentacleCount; i++)
+    {
+      dam = dam + *tentData[i]->Damage;
+    }
+    auto defeated=dam>100;
+    return defeated;
+}
+void Enemy::Update(bool move){
   Age++;
   //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
-  motion();
+  if (!isAllMeatFired())
+    motion();
   //std::cout << *(e->Damage) << std::endl;
   float32  scale = 1.0f / 4.0f ;
   glScalef(scale , scale , 0 );
@@ -303,10 +318,10 @@ void Enemy::Update(){
     }
   }
   int animFl = state ? Age % animLen : animLen - Age % animLen;
-  anim->DamageColor(*e->Damage);//‘«‚È‚Ç‚ÉŒÂ•Ê‚É‚Í•\Ž¦‚Å‚«‚È‚¢
-  //renderVertice( points , pointsLength , animFl/2 );
-  anim->UpdateAnim(true);
-  anim->NoUse();
+  //anim->DamageColor(*e->Damage);//‘«‚È‚Ç‚ÉŒÂ•Ê‚É‚Í•\Ž¦‚Å‚«‚È‚¢
+  //renderVertice( points , pointsLength , animFl/2 ); //’x‚­‚µ‚Ä‚é
+  anim->UpdateAnim(animFl/2);
+  //anim->NoUse();
   glEnd();
   glLoadIdentity();
   //return pos;

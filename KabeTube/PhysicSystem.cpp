@@ -212,8 +212,10 @@ void step(){
   float hz = 60.f;
   int32 pi =
     b2CalculateParticleIterations( grav.y , 1 , 1/hz );
-  w->Step( 1/hz , 8 , 3 , pi );
 
+  if (cfilter->StoppingFlame==0)
+    w->Step( 1/hz , 8 , 3 , pi );
+  else (cfilter->StoppingFlame--);
   auto fpart = w->GetParticleSystemList()->GetPositionBuffer();
 
   for (auto bod = w->GetBodyList() ;
@@ -256,7 +258,7 @@ void PhysicSystem::Step(){
     //if(var)
   }
 #else
-  std::for_each(ens->Data->begin(), ens->Data->end(), [](PEnemy i){i->Update(); });
+  std::for_each(ens->Data->begin(), ens->Data->end(), [](PEnemy i){i->Update(cfilter->StoppingFlame==0); });
 #endif
   step();
 }

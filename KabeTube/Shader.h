@@ -9,6 +9,10 @@ ref class Shader
     int fsid;
     int pid;
     int esize;
+
+    float* points;
+    GLuint* indexs;
+
     uint* vbs,* vas;
     uint eb;
     //map<string,atr>

@@ -16,7 +16,7 @@ class AnimAsset{
   int count;
   Shader* shader;
 public:
-  void UpdateAnim(bool);
+  void UpdateAnim(int);
   AnimAsset(EnemyKind); //
 
   void SetPoints(Points,int);
