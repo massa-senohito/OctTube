@@ -2,7 +2,7 @@
 #include "GameAlgolyzm.h"
 #include "PhysicSystem.h"
 #include "Renderer.h"
-
+#include "Enemy.h"
 uint svgVLength;
 uint getSvgVLen(){
   return svgVLength;
@@ -117,7 +117,7 @@ void makeDragon(PPhysicSystem sys,stringArray coes ){
   enemy->SetAssets(Squid); //
   //enemy->SetPoints(ps,Assets::squidPLen());
 }
-#define Path SvgFs::Loader::Path 
+//#define Path SvgFs::Loader::Path 
 
 Points svgRead(String name){
   /*  M始点 C 点 前の点　コントロールポイント 次の点
@@ -272,8 +272,8 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
   auto path    = args[0];
   auto lastBel = path.find_last_of('\\');
-  path         = path.substr(0,lastBel);
-
+  path         = path.substr(0,lastBel+1);
+  Path::setPass(path);
   //Assets::squid     = svgRead((path+"\\allFlameOld").data());
   //Assets::squidLen  = siz;
   //Assets::squidElem = gcnew uint[siz];

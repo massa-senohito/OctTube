@@ -6,7 +6,7 @@ enum EnemyKind{
   Squid,Dragon,Len,
 };
 namespace Path{
-  void setPass(std::string);
+  void setPass(std::string&);
 }
 //インスタンス作るより、AnimAssets[Squid]で取り出せるほうが
 class AnimAsset{

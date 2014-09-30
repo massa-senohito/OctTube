@@ -3,8 +3,8 @@
 #include "AL\al.h"
 #include "AL\alc.h"
 #include "Enemy.h"
-std::string path = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Projects\\OctTube\\Debug\\";
-void Path::setPass(std::string p){
+std::string& path = std::string(""); //"C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Projects\\OctTube\\Debug\\";
+void Path::setPass(std::string& p){
   path = p;
 }
 void AnimAsset::UpdateAnim(int flame){
