@@ -71,12 +71,15 @@ void PhysicSystem::delFences(){
 #endif
   obs->Clear();
 }
-void eachParticle(){
+void eachParticle(std::function<void(V2&)> f){
   int length=particleSys->GetParticleCount();
   size_t vsize=sizeof V2;
   size_t csize=sizeof b2Color;
   auto poss=particleSys->GetPositionBuffer();
-  //w->SetDebugDraw(b2Draw
+  for (size_t i = 0; i < length; i++)
+  {
+    f(poss[i]);
+  }
 }
 //w->GetParticleFlagsBuffer()[i] |= b2_zombieParticle;
  
@@ -202,6 +205,22 @@ int PhysicSystem::MakeParticle(float x,float y){
   //pg-> rigidparticle でないとPositionとっても意味のない座標になる（たぶん重心が出るが、GetCenterあるのでそっちを）
   return 0;//pg->GetParticleCount();
 }
+void PhysicSystem::jointDraw(){
+
+  auto jl  = w->GetJointList();
+  auto col = b2Color();
+  while (jl){
+    auto aa = jl->GetAnchorA();
+    auto ab = jl->GetAnchorB();
+    auto ba = jl->GetBodyA()->GetPosition();
+    auto bb = jl->GetBodyB()->GetPosition();
+    dd->DrawCircle( aa , 0.3 , col);
+    dd->DrawCircle( ab , 0.3 , col);
+    dd->DrawCircle( bb , 0.6 , col);
+    dd->DrawCircle( ba , 0.6 , col);
+    jl = jl->GetNext();
+  }
+}
 void step(){
   //グループを作成すると増える、
   //std::cout << particleSys->GetParticleGroupCount() << std::endl;
@@ -216,37 +235,44 @@ void step(){
   if (cfilter->StoppingFlame==0)
     w->Step( 1/hz , 8 , 3 , pi );
   else (cfilter->StoppingFlame--);
-  auto fpart = w->GetParticleSystemList()->GetPositionBuffer();
-
+  
   for (auto bod = w->GetBodyList() ;
     bod != nullptr ; bod=bod->GetNext() ){
     auto ud = bod->GetUserData();
     if(ud){
       //userdataならビット演算で区別するのが
-      auto    p= bod->GetPosition();
-      auto dist= p-(*fpart);
-//      int siz=1;
+      //auto    p= bod->GetPosition();
 //      glRecti(-siz,-siz,siz,siz);
+    }
+    else{
+#define de
+#ifndef deb
+      //bod->GetFixtureList()->GetShape
+#endif
     }
     //かべの描画　まあ継承でDraw呼ぶのが妥当か
     //bod->GetFixtureList()
   }
-  auto jl  = w->GetJointList();
-  auto col = b2Color();
-  while (jl){
-    auto aa = jl->GetAnchorA();
-    auto ab = jl->GetAnchorB();
-    auto ba = jl->GetBodyA()->GetPosition();
-    auto bb = jl->GetBodyB()->GetPosition();
-    dd->DrawCircle( aa , 0.3 , col);
-    dd->DrawCircle( ab , 0.3 , col);
-    dd->DrawCircle( bb , 0.6 , col);
-    dd->DrawCircle( ba , 0.6 , col);
-    jl = jl->GetNext();
-  }
+#ifdef deb
   w->DrawDebugData();
-}
+#else
 
+  eachParticle([](V2& v){dd->DrawCircle(v, 0.5, b2Color()); });
+#endif
+
+
+}
+bool PhysicSystem::AllEnemyFired(){
+  auto count = ens->Count;
+  auto& e = (*ens);
+  for (int i = 0; i < count; i++)
+  {
+    if (!e[i]->IsAllMeatFired())return false;
+  }
+  return true;
+}
+std::string tos(int i){ return std::to_string(i)+'\n'; }
+std::string leg(int i){ return "leg"+tos(i)+": "; }
 ///ワールドをステップさせ、同時に描画します
 void PhysicSystem::Step(){
 
@@ -260,7 +286,19 @@ void PhysicSystem::Step(){
 #else
   std::for_each(ens->Data->begin(), ens->Data->end(), [](PEnemy i){i->Update(cfilter->StoppingFlame==0); });
 #endif
-  step();
+  if( !AllEnemyFired())
+    step();
+  else{
+    //結果画面表示
+    auto data = ens->Data;
+    auto gain = [](PEnemy e){return e->GainPoints(); };
+    auto ps = gain(data->at(0));  //Map(*data, gain);
+    glRasterPos2f(10, 10);
+    auto clrstr = std::string("squid: ") + tos(ps[0])
+      +leg(0)+ tos(ps[1]) + leg(1)+tos(ps[2]) + leg(2)+tos(ps[3]);
+    glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10, reinterpret_cast<const unsigned char*>(clrstr.data()));
+  }
+  //jointDraw();
 }
 PhysicSystem::~PhysicSystem(){
   if(dd!=nullptr)

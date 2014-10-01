@@ -3,7 +3,7 @@
 #include "AL\al.h"
 #include "AL\alc.h"
 #include "Enemy.h"
-std::string& path = std::string(""); //"C:\\Users\\massa_senohito\\Documents\\Visual Studio 2013\\Projects\\OctTube\\Debug\\";
+std::string& path = std::string(""); 
 void Path::setPass(std::string& p){
   path = p;
 }
@@ -11,7 +11,8 @@ void AnimAsset::UpdateAnim(int flame){
   //if ( update ) ++count;
   shader->Render(flame);
 }
-AnimAsset::AnimAsset(EnemyKind){
+AnimAsset::AnimAsset(EnemyKind ek){
+  //if (ek == Squid){ "squid"; }
   auto vs = path + "squid.vs";
   auto fs = path + "squid.fs";
   shader = (new Shader(vs.data(), fs.data()));

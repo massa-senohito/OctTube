@@ -6,6 +6,12 @@ float toDeg(float);
 //#include "PhysicSystem.h"
 //http://manski.net/2011/04/cpp-cli-cheat-sheet/
 //CLIかどうか知るには、他にもチートシートが
+
+//let delAssets
+//fade
+//let stageLoad i=
+//let dragonAI=
+  //羽ばたいて喚起してしまうので羽からいぶして
 #ifdef _MANAGED
 using namespace System;
 using namespace System::IO;

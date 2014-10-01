@@ -27,7 +27,7 @@ bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 a){
   if ( f->GetUserData() != nullptr ){
     auto pos = sys->GetPositionBuffer()[a];
     //sys->SetParticleFlags(a,0);
-    if (StoppingFlame == 0)StoppingFlame = 12;
+    if (StoppingFlame == 0)StoppingFlame = 2;
     else StoppingFlame--;
     collideAndDamage( f , sys , a );
     //なぜかtrue返すとシミュレーションが安定する,falseだとめり込んだり

@@ -82,11 +82,12 @@ ref class Enemy
   Body* tents;
   Body* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
-  bool isAllMeatFired();
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
   //void SetPoints(Points,int);
   void SetAssets(int kind);
+  bool IsAllMeatFired();
+  int* GainPoints();
   ~Enemy();
   //EnemyData GetEnemyData();
   int Age;

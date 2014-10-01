@@ -195,6 +195,9 @@ void Enemy::Veloc(V2 v){
 //  pointsLength=len;
   //Asset‚ªelem 
 //}
+int* Enemy::GainPoints(){
+  return new int[]{ *e->Damage ,*tentData[0]->Damage,*tentData[1]->Damage,*tentData[2]->Damage};
+}
 void Enemy::SetAssets(int kind){
   auto kin = static_cast<EnemyKind>(kind);
   anim = new AnimAsset(kin);
@@ -282,7 +285,7 @@ void Enemy::motion(){
 }
 
 bool 
-  Enemy::isAllMeatFired ()//ms=
+  Enemy::IsAllMeatFired ()//ms=
   {
     int length=0;//
     auto dam =* e->Damage;
@@ -296,7 +299,7 @@ bool
 void Enemy::Update(bool move){
   Age++;
   //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
-  if (!isAllMeatFired())
+  if (!IsAllMeatFired())
     motion();
   //std::cout << *(e->Damage) << std::endl;
   float32  scale = 1.0f / 4.0f ;

@@ -33,6 +33,7 @@ ref class PhysicSystem
   PObss obs;
   PEnes ens;
   void makeOuterFence(int,int);
+  void jointDraw();
 public:
   PhysicSystem(void);
   ~PhysicSystem();
@@ -40,6 +41,7 @@ public:
   void Step();
   void addFence(float,float,float,float);
   PEnemy addEnemy(float,float,float rad);
+  bool AllEnemyFired();
   void delFences();
 };
 

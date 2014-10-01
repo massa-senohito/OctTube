@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "Enemy.h"
 uint svgVLength;
+Renderer* rend;
+
 uint getSvgVLen(){
   return svgVLength;
 }
@@ -60,6 +62,20 @@ namespace Assets{
   int squidPLen(){
     return squidLen;
   }
+  Points wall;
+  uint*  wallElem;
+  int    wallLen;
+
+  Points getWallP(){
+    return ( wall);
+  }
+  uint* getWallElem(){
+    return wallElem;
+  }
+  int wallPLen(){
+    return wallLen;
+  }
+
   //後ほどクラスに移動する
   Points tako;
   uint*  takoElem;
@@ -208,9 +224,10 @@ void fileRead(String filename,PPhysicSystem sys){
 
 ///最後に撃った時のフレーム
 int lastFiredFrame=int(0);
-float angle=float(90);
+float angle=float(140);
 #define pos 0.5f,0.4f
 float posx = 29; float posy = -18.5f;
+float scalex = 0, scaley = -98.5;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
 void onRenderFrame(int time){
@@ -244,30 +261,41 @@ void onRenderFrame(int time){
       lastFiredFrame=time;
     }
   }
+  auto s = 0.5f;
   if(Key::isLeftPushed()){
     if(time%movableF==0){
-      //angle-=0.5f;
-      posx -= 0.5f;
+      angle+=0.5f;
+      //posx -= 0.5f;
+      scalex -= s;
     }
   }
   if(Key::isRightPushed()){
     if(time%movableF==0){
-      //angle+=0.5f;
-      posx += 0.5f;
+      angle-=0.5f;
+      //posx += 0.5f;
+      scalex += s;
     }
   }
   if(Key::isUpPushed()){
     if(time%movableF==0){
       posy += 0.5f;
+      scaley += s;
     }
   }
   if(Key::isDownPushed()){
     if(time%movableF==0){
       posy -= 0.5f;
+      scaley -= s;
     }
   }
+  glScalef(0.17f, 0.2f,1.f);
+  glRotatef(180, 1, 0, 0);
+  glTranslatef(-263.5f, scaley, 0);
+  glBegin(GL_LINES);
+  renderVertice(Assets::wall, Assets::wallLen,0);
+  glEnd();
+  glLoadIdentity();
 }
-Renderer* rend;
 GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
   auto path    = args[0];
@@ -288,6 +316,8 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   {
     Assets::takoElem[i] = i;
   }
+  Assets::wall = svgRead((path + "\\wallallflame").data());
+  Assets::wallLen = svgVLength;
 
   int len = 0; //(args->Length);
   //glewInit呼ばないといけないので
@@ -337,5 +367,7 @@ GameAlgolyzm::~GameAlgolyzm(void)
   DA ( Assets::squidElem);
   DA ( Assets::tako);
   DA ( Assets::takoElem);
+  DA ( Assets::wall);
+  DA ( Assets::wallElem);
   SAFE_DELETE( sys );
 }
