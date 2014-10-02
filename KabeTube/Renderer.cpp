@@ -92,7 +92,7 @@ void getStenc();
 void oneCall(std::function<void(void)> f);
 void display();
 void stencilInit();
-GUIUtil* ui;
+//GUIUtil* ui;
 std::map<string,int> callCount;
 std::map<string,int> callTime;
 static int count=0;
@@ -123,9 +123,9 @@ void createBallon(float32 radius,float32 pradius,float32 x,float32 y){
 }
 void gluiInit(){
   //GLUI‚ÌÝ’è
-  ui = new GUIUtil;
-  ui->addSpinner("radius",&radius);
-  ui->addSpinner("pradius",&pradius);
+  //ui = new GUIUtil;
+  //ui->addSpinner("radius",&radius);
+  //ui->addSpinner("pradius",&pradius);
 }
 static const GLuint ignoreId[]={0};
 RenderCallback drawCall;
@@ -1878,5 +1878,5 @@ void setUtsurikomi(){
 Renderer::~Renderer(void)
 {
     delete testTex;
-    GLUI_Master.close_all();
+    //GLUI_Master.close_all();
 }

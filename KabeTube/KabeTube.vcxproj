@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>liquidfun.lib;glew32.lib;freeglut_staticd.lib;glui32.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>liquidfun.lib;glew32.lib;freeglut_staticd.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)/../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
