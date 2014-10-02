@@ -273,6 +273,7 @@ bool PhysicSystem::AllEnemyFired(){
 }
 std::string tos(int i){ return std::to_string(i)+'\n'; }
 std::string leg(int i){ return "leg"+tos(i)+": "; }
+
 ///ワールドをステップさせ、同時に描画します
 void PhysicSystem::Step(){
 
@@ -296,6 +297,7 @@ void PhysicSystem::Step(){
     glRasterPos2f(10, 10);
     auto clrstr = std::string("squid: ") + tos(ps[0])
       +leg(0)+ tos(ps[1]) + leg(1)+tos(ps[2]) + leg(2)+tos(ps[3]);
+    if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
     glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10, reinterpret_cast<const unsigned char*>(clrstr.data()));
   }
   //jointDraw();
@@ -319,8 +321,11 @@ PhysicSystem::~PhysicSystem(){
   ens->Clear();
   delete ens;
   ens=nullptr;
-
+  
   w->DestroyParticleSystem(particleSys);
+
   particleSys=nullptr;
+  delete w;
+  w = nullptr;
   //http://oshiro.bpe.es.osaka-u.ac.jp/people/staff/imura/computer/OpenGL/framebuffer_object/disp_content
 }

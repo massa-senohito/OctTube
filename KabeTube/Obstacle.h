@@ -13,6 +13,7 @@ typedef b2Vec2 V2;
 //typedef System::Tuple<float,float>^ V;
 //error LNK2038 : '_ITERATOR_DEBUG_LEVEL' ‚Ì•sˆê’v‚ªŒŸo‚³‚ê‚Ü‚µ‚½B
 
+void playSquidDamageSound();
 class EnemyData{
 public:
   const char* Name=nullptr;
@@ -21,6 +22,7 @@ public:
   EnemyData(int d, const char* n){
     Damage = new int(d);
     Name = n;
+    PlayDamagedSound = playSquidDamageSound;
   }
   EnemyData(){
   

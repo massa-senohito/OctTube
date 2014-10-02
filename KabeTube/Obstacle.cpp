@@ -3,7 +3,8 @@
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
 SoundAsset* squidAsset;
-void playSquidDamageSound(){
+void playSquidDamageSound()
+{
   squidAsset->PlayDamageSound();
 }
 AnimAsset* animAsset;
@@ -160,7 +161,6 @@ void Enemy::squidProfile(World w,V2 pos){
   def->angularDamping = 0.1f;
   def->type         = b2BodyType::b2_dynamicBody;
   e=  new EnemyData(0,"squid");
-  e->PlayDamagedSound = playSquidDamageSound;
   body              = w->CreateBody(def);
   body->SetMassData(&m);
   fixture           = body->CreateFixture(s,0);
@@ -258,7 +258,7 @@ void Enemy::motion(){
       Veloc  ( V2( -one , zero ) );
     }
     if (p.y > actBox.upperBound.y){
-      Impulse( V2( zero , -one ) );
+      Impulse( V2( zero , -one*5 ) );
     }
     if (p.x < actBox.lowerBound.x){
       mov = TR;
@@ -270,7 +270,7 @@ void Enemy::motion(){
       Veloc  ( V2( one  , zero ) );
     }
     if (p.y < actBox.lowerBound.y){
-      Impulse( V2( zero , one  ) );
+      Impulse( V2( zero , one*5  ) );
     }
   }
   else{
