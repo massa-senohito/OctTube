@@ -382,7 +382,7 @@ void GLUT_INITs(int argcp,char**argvp)
   glutInit(&argcp,argvp);
   glutInitDisplayMode(GLUT_RGBA| GLUT_DOUBLE | GLUT_DEPTH |GLUT_STENCIL);
   glutInitWindowSize(640,480);
-  glutCreateWindow("Basic Walking Around without KeyRepeat");
+  glutCreateWindow("oct tube");
   //  std::cout << "Vendor :"<<glGetString(GL_VENDOR)<<'\n';
   //std::cout << "GPU : "<<glGetString(GL_RENDERER) <<'\n';
   //std::cout << "OpenGL ver. " <<glGetString(GL_VERSION)<<'\n';

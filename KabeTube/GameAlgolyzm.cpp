@@ -224,10 +224,10 @@ void fileRead(String filename,PPhysicSystem sys){
 
 ///最後に撃った時のフレーム
 int lastFiredFrame=int(0);
-float angle=float(140);
+float angle=float(90);
 #define pos 0.5f,0.4f
 float posx = 29; float posy = -18.5f;
-float scalex = 0, scaley = -98.5;
+//float scalex = 0, scaley = -98.5;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
 void onRenderFrame(int time){
@@ -261,36 +261,32 @@ void onRenderFrame(int time){
       lastFiredFrame=time;
     }
   }
-  auto s = 0.5f;
+  //auto s = 0.5f;
   if(Key::isLeftPushed()){
     if(time%movableF==0){
       angle+=0.5f;
       //posx -= 0.5f;
-      scalex -= s;
     }
   }
   if(Key::isRightPushed()){
     if(time%movableF==0){
       angle-=0.5f;
       //posx += 0.5f;
-      scalex += s;
     }
   }
   if(Key::isUpPushed()){
     if(time%movableF==0){
       posy += 0.5f;
-      scaley += s;
     }
   }
   if(Key::isDownPushed()){
     if(time%movableF==0){
       posy -= 0.5f;
-      scaley -= s;
     }
   }
   glScalef(0.17f, 0.2f,1.f);
   glRotatef(180, 1, 0, 0);
-  glTranslatef(-263.5f, scaley, 0);
+  glTranslatef(-263.5f,-98.5f, 0);
   glBegin(GL_LINES);
   renderVertice(Assets::wall, Assets::wallLen,0);
   glEnd();
