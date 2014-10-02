@@ -13,8 +13,8 @@ void AnimAsset::UpdateAnim(int flame){
 }
 AnimAsset::AnimAsset(EnemyKind ek){
   //if (ek == Squid){ "squid"; }
-  auto vs = path + "squid.vs";
-  auto fs = path + "squid.fs";
+  auto vs = path + "\\squid.vs";
+  auto fs = path + "\\squid.fs";
   shader = (new Shader(vs.data(), fs.data()));
   vertice = svgRead((path + "\\allFlame").data());
   vertLen = getSvgVLen();
@@ -161,8 +161,8 @@ SoundAsset::SoundAsset(EnemyKind)
   //ALuint* squidSources;
   bufs = new ALuint[2];
   alGenBuffers(2, bufs);
-  openAndClose(path + std::string("ido2.wav") , bufs[0]);
-  openAndClose(path + std::string("yake.wav") , bufs[1]);
+  openAndClose(path + std::string("\\ido2.wav") , bufs[0]);
+  openAndClose(path + std::string("\\yake.wav") , bufs[1]);
   sources = new ALuint[2];
   alGenSources(2, sources);
   alSourcei(sources[0], AL_BUFFER, bufs[0]);

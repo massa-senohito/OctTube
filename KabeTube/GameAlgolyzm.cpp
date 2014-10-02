@@ -29,6 +29,7 @@ namespace File{
       std::cout << "ファイル:"<<name << " がありません" << std::endl;
       return nullptr;
     }
+    return nullptr;
   }
 }
 namespace Convert{
@@ -253,7 +254,7 @@ void onRenderFrame(int time){
   glLoadIdentity();
   //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
-    if(time-lastFiredFrame>10){
+    if(time-lastFiredFrame>10 && !sys->AllEnemyFired()){
       float vx=cos(toRad(angle));
       float vy=sin(toRad(angle));
       makeSinglePar
@@ -297,6 +298,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   auto path    = args[0];
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel+1);
+  path         += "assets";
   Path::setPass(path);
   //Assets::squid     = svgRead((path+"\\allFlameOld").data());
   //Assets::squidLen  = siz;

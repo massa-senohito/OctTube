@@ -29,6 +29,8 @@
 //    case VMove:
 //      updatePos(start,end)
 
+//copy $(MSBuildProjectDirectory)/../assets/ $(OutDir)
+//copy $(MSBuildProjectDirectory) / .. / glew32.dll / $(OutDir)
 //
 //Baloon::Baloon(
 //fence->Rotate(barAxis)
@@ -41,7 +43,6 @@
 //
 ////objを指定したらパスとobjをVSにとうろくするよーな
 //<AdditionalDependencies>solid.lib;liquidfun.lib;
-//<AdditionalLibraryDirectories>C:\Users\massa_senohito\Downloads\solid-3.5.7\VisualC6\solid\Debug;C:\Users\massa_senohito\Documents\Visual Studio 11\Projects\KabeTube\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 //let bxml s= "<" + s + ">"
 //let cxml s= "<" + s + "/>"
 //
@@ -98,7 +99,8 @@ GLint es[]={
 int ei=0;
 void disp( void ) {
   glClear(GL_COLOR_BUFFER_BIT);
-  static auto squid = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
+  static auto squid 
+    = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
   static auto ps=svgRead(squid);
   float nine =0.9f;
   float scale=1.0f/150.0f;
