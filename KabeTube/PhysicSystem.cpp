@@ -83,8 +83,6 @@ void eachParticle(std::function<void(V2&)> f){
 }
 //w->GetParticleFlagsBuffer()[i] |= b2_zombieParticle;
  
-
-
 DebugDraw* dd;
 MyContactFilter* cfilter;
 auto downGrav=-9.8f;
@@ -104,7 +102,13 @@ void PhysicSystem::makeOuterFence(int x,int y){
   obs->Add(f3);
   obs->Add(f4);
 }
-
+void MakeCircleSonsor(){
+	b2CircleShape cs;
+	cs.m_radius = 3;
+	BodyDef bdef;
+	bdef->position;
+	w->CreateBody(bdef);
+}
 PhysicSystem::PhysicSystem(void)
 {
   //toi=タイムオブインパクトｚｃ
@@ -235,7 +239,7 @@ void step(){
   int32 pi =
     b2CalculateParticleIterations( grav.y , 1 , 1/hz );
 
-  if (cfilter->StoppingFlame==0)
+  if ( cfilter->StoppingFlame==0 )
     w->Step( 1/hz , 8 , 3 , pi );
   else (cfilter->StoppingFlame--);
   
@@ -245,10 +249,10 @@ void step(){
     if(ud){
       //userdataならビット演算で区別するのが
       //auto    p= bod->GetPosition();
-//      glRecti(-siz,-siz,siz,siz);
+      //glRecti(-siz,-siz,siz,siz);
     }
     else{
-#define deb
+#define de
 #ifndef deb
       //bod->GetFixtureList()->GetShape
 #endif

@@ -150,9 +150,9 @@ void Enemy::squidProfile(World w,V2 pos){
 
   s                 = new b2PolygonShape;
   //s->m_radius=size;
-  s->SetAsBox(10, 15,V2(0,5),0);
+  s                 ->SetAsBox(10, 15,V2(0,5),0);
   auto m            = b2MassData();
-  s->ComputeMass(&m,0.1f);
+  s                 ->ComputeMass(&m,0.1f);
   
   def               = new b2BodyDef();
   def->position     = pos;
@@ -161,16 +161,17 @@ void Enemy::squidProfile(World w,V2 pos){
   def->angularDamping = 0.1f;
   def->type         = b2BodyType::b2_dynamicBody;
   e=  new EnemyData(0,"squid");
-  body              = w->CreateBody(def);
-  body->SetMassData(&m);
+  body       = w->CreateBody(def);
+  body       ->SetMassData(&m);
   fixture           = body->CreateFixture(s,0);
-  fixture->SetUserData(e);
+  fixture           ->SetUserData(e);
+  fixture           ->SetSensor(false);
   tents             = sqTentacle(pos);
-  auto& j  =joint(w, body, tents[0]);
-  auto& jj =joint(w, body, tents[1]);
-  auto& jjj=joint(w, body, tents[2]);
+  auto& j    = joint(w, body, tents[0]);
+  auto& jj   = joint(w, body, tents[1]);
+  auto& jjj  = joint(w, body, tents[2]);
 
-  auto mass=body->GetMass();
+  auto mass  = body->GetMass();
 }
 Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
 :Age(0), points(nullptr)
@@ -217,8 +218,8 @@ void Enemy::motion(){
   auto p             = body->GetPosition();
   float32 ang        = body->GetAngle();
   //-59,-37
-  glTranslatef( p.x , p.y , 0 );
-  glRotatef( toDeg( ang) + 180.0f , 0 , 0 , 1 );
+  glTranslatef  ( p.x , p.y , 0 );
+  glRotatef     ( toDeg( ang) + 180.0f , 0 , 0 , 1 );
 //キャッチボールみたいな動き＝外に壁があれば
   //数フレに1度Impulse
   //Unityで実験化
@@ -306,7 +307,6 @@ void Enemy::Update(bool move){
   glScalef(scale , scale , 0 );
   //ダメージ分をシェーダに渡して頂点色をいじりたい
   //燻製なので白方面に
-  glBegin(GL_LINES);
   //パーティクルが多くなると画面に白のもこもこが現れ、みづらくなる
   //anim+=pointsLength;points[anim];
   static bool state = false;
@@ -323,6 +323,7 @@ void Enemy::Update(bool move){
   int animFl = state ? Age % animLen : animLen - Age % animLen;
   //anim->DamageColor(*e->Damage);//足などに個別には表示できない
   //renderVertice( points , pointsLength , animFl/2 ); //遅くしてる
+  glBegin(GL_LINES);
   anim->UpdateAnim(animFl/2);
   //anim->NoUse();
   glEnd();

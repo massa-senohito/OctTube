@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
+#define STB_PERLIN_IMPLEMENTATION
+#include "stb_perlin.h"
 //#include "Box2D/Box2D.h"
 //using namespace System::Linq;
 //createRice //”S’…‚·‚é
@@ -97,13 +99,33 @@ GLint es[]={
   -1
 };
 int ei=0;
+float per = 0.0f;
+void fivePerlin(float z){
+  auto kiz = 0.1f;
+  auto to = 1;
+  for (float i = -1; i < to; i += kiz){
+    for (float j = -1; j < to; j += kiz)
+    {
+      auto n =( stb_perlin_noise3(i, j, z)+1.0f)/2.0f;
+//    printf_s("%f ", n);
+      glBegin(es[ei]);
+      glColor3f(n, n, n);
+      glVertex2f(j, i);
+      glVertex2f(j+kiz, i);
+      glVertex2f(j+kiz, i+kiz);
+      glEnd();
+      glVertex2f(j, i+kiz);
+    }
+//  printf_s("%s", "\n");
+  }
+}
 void disp( void ) {
   glClear(GL_COLOR_BUFFER_BIT);
-  static auto squid 
-    = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
-  static auto ps=svgRead(squid);
+//  static auto squid 
+//    = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
+//  static auto ps=svgRead(squid);
   float nine =0.9f;
-  float scale=1.0f/150.0f;
+  float scale = 1.0f;///150.0f;
   /*
    	glColor3ub(0xFF , 0 , 0);
    	glVertex2f(-nine , -nine);
@@ -113,15 +135,24 @@ void disp( void ) {
 	glColor3b(127 , 0 , 0);
         glVertex2f(nine , -nine);
   */
-  glScalef(scale,scale,0);
-  glBegin(es[ei]);
+  glScalef(scale,scale,1.0f);
+  //glBegin(es[ei]);
+  fivePerlin(per);
  // renderVertice(ps,Assets::squidPLen());
-  glEnd();
+  //glEnd();
   glFlush();
 }
-void key(int key,int,int){
-  ei++;
-  if(es[ei]==-1)ei=0;
+void key(int key, int, int){
+  if (key == GLUT_KEY_UP){
+    per += 0.1f;
+  }
+  else if (key == GLUT_KEY_DOWN){
+    per -= 0.1f;
+  }
+  else{
+    ei++;
+    if (es[ei] == -1)ei = 0;
+  }
 }
 void timert(int value) {
   //glRotatef(1 , 0.5 , 1 , 0.25);
@@ -157,7 +188,7 @@ int texTest(int argc , char ** argv){
     GL_TEXTURE_2D , 0 , 3 , TEXSIZE , TEXSIZE ,
     0 , GL_RGB , GL_UNSIGNED_BYTE , bits
   );
-
+  glDeleteTextures(1, &texName);
   glutMainLoop();
   return 0;
 }
@@ -174,9 +205,10 @@ void quitF(){
 int main(int argc,char* argv[])
 {
   try{
-    atexit(quitF);
-    //texTest(0,nullptr);
+	  //fivePerlin(1);
+    //atexit(quitF);
     kabeMain(argv[0]);
+    //texTest(argc,argv);
   }catch
 #ifdef _MANAGED
     (System::IO::FileLoadException^ e){

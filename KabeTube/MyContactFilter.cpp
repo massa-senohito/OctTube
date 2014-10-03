@@ -23,7 +23,7 @@ bool MyContactFilter::ShouldCollide(b2Fixture* f,b2Fixture* ff){
 ////contactCallbackŽg‚¤‚Ù‚¤‚ª‚»‚ê‚ç‚µ‚¢‚Ì‚Å•›ì—p“I‚È“®ì‚ÍŠÖ”‚É“¦‚ª‚µ‚Ä‚¨‚¢‚½‚Ù‚¤‚ª–³“ï
 bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 a){
   //sys->ParticleApplyForce(a,;
-
+	//return true;
   if ( f->GetUserData() != nullptr ){
     auto pos = sys->GetPositionBuffer()[a];
     //sys->SetParticleFlags(a,0);

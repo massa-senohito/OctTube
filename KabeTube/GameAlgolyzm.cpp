@@ -5,7 +5,12 @@
 #include "Assets.h"
 uint svgVLength;
 Renderer* rend;
-
+//焼けてる感じを出す
+//ソケット通じてデバッガを作る
+//ステージクリア時にアニメを止める
+//蒸発してもその場にエフェクトとセンサーを作る
+//団扇のためにセンサーを作る
+//stbで画像ロードエフェクト
 uint getSvgVLen(){
   return svgVLength;
 }
@@ -247,7 +252,8 @@ void onRenderFrame(int time){
   const int animLen = 38;
   if (time % animLen == 0) state = !state;
   int anim = state ? time % animLen : animLen - time % animLen;
-  renderVertice( Assets::tako , Assets::takoLen , anim/2 );
+  renderVertice( Assets::tako , Assets::takoLen , anim/2 );  //ここと敵部分
+  //enem->Update()
   glEnd();
   //たこの触手をキーで動かせるが、足はベジエカーブを移動させればそれなりの見栄えになるみたい
   //吹き飛ばせるように
