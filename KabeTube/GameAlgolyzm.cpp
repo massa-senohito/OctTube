@@ -2,7 +2,7 @@
 #include "GameAlgolyzm.h"
 #include "PhysicSystem.h"
 #include "Renderer.h"
-#include "Enemy.h"
+#include "Assets.h"
 uint svgVLength;
 Renderer* rend;
 
@@ -250,6 +250,7 @@ void onRenderFrame(int time){
   renderVertice( Assets::tako , Assets::takoLen , anim/2 );
   glEnd();
   //たこの触手をキーで動かせるが、足はベジエカーブを移動させればそれなりの見栄えになるみたい
+  //吹き飛ばせるように
   //drawClothHair(angle);
   glLoadIdentity();
   //std::cout << angle << std::endl;
@@ -259,6 +260,10 @@ void onRenderFrame(int time){
       float vy=sin(toRad(angle));
       makeSinglePar
         ( posx , posy , vx*power , vy*power );
+      makeSinglePar
+        ( posx-3 , posy-3 , vx*power , vy*power );
+      makeSinglePar
+        ( posx-2 , posy-5 , vx*power , vy*power );
       lastFiredFrame=time;
     }
   }

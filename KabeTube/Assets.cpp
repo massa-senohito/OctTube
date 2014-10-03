@@ -2,7 +2,7 @@
 #include "GameAlgolyzm.h"
 #include "AL\al.h"
 #include "AL\alc.h"
-#include "Enemy.h"
+#include "Assets.h"
 std::string& path = std::string(""); 
 void Path::setPass(std::string& p){
   path = p;

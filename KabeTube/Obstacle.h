@@ -1,6 +1,6 @@
 #pragma once
 #include "Box2D\Box2D.h"
-#include "Enemy.h"
+#include "Assets.h"
 typedef b2ParticleSystemDef* PDef ;
 typedef b2ParticleSystem* PSys;
 typedef b2World* World;

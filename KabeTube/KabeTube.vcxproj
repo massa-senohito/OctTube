@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugDraw.h" />
-    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Assets.h" />
     <ClInclude Include="GameAlgolyzm.h" />
     <ClInclude Include="GUIUtil.h" />
     <ClInclude Include="MyContactFilter.h" />
@@ -106,7 +106,7 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Assets.cpp" />
     <ClCompile Include="GameAlgolyzm.cpp" />
     <ClCompile Include="GUIUtil.cpp" />
     <ClCompile Include="OctTube.cpp" />

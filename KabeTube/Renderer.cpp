@@ -293,8 +293,8 @@ void onDrag(int x,int y){
   //std::cout << y << std::endl;
   //320-> 90 160->0
   //0  ->-90  180/wid*
-  rx=180.0/640.0*x-90.0;
-  ry=180.0/480.0*y-90.0;
+  //rx=180.0/640.0*x-90.0;
+  //ry=180.0/480.0*y-90.0;
 
 }
 void specialkey(int key,int x,int y){

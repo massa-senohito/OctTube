@@ -164,11 +164,13 @@ void Shader::Use(bool isuse){
 
 void Shader::Render(int anim){
   //ÇπÇ¡Ç©Ç≠ÇæÇØÇ«í∏ì_ÉJÉâÅ[Ç≈ï`âÊÇµÇÊÇ§
-  //glEnableClientState(GL_VERTEX_ARRAY);
-  //glVertexPointer(2, GL_FLOAT, 0, &points[anim*esize*2]);
-  //glDrawElements(GL_LINES, esize, GL_UNSIGNED_INT, indexs);
   int len = esize * 2;
   int pl=anim*len+len;
+  glPushMatrix();
+  //glTranslatef( -59 , -90 , 0 );
+  //glEnableClientState(GL_VERTEX_ARRAY);
+  //glVertexPointer(2, GL_FLOAT, 0, &points[anim*len]);
+  //glDrawElements(GL_LINES, esize, GL_UNSIGNED_INT, indexs);
   auto verts=Vector<float>(len);
   for (int i = anim*len; i < pl; i+=2)
   {
@@ -180,6 +182,7 @@ void Shader::Render(int anim){
     glVertex2f( psi-59,psi1-90);//vaoÇÕà⁄ìÆÇ≥ÇπÇƒÇ»Ç¢Ç©ÇÁÇæ
     //glVertex2f( psi,psi1);
   }
+  glPopMatrix();
 }
 void Shader::VaoRender(int anim){
   glBindVertexArray(vas[anim]);

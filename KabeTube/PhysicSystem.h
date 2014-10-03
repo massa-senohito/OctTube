@@ -43,5 +43,6 @@ public:
   PEnemy addEnemy(float,float,float rad);
   bool AllEnemyFired();
   void delFences();
+  void Blow(V2 pos,V2 dir,float rad);
 };
 

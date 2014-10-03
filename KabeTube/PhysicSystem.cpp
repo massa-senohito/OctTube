@@ -187,6 +187,9 @@ void makeFlyBox(float x,float y){
 void makeFlyFish(){
   //makeFlyBox(-12,12).Joint();
 }
+void PhysicSystem::Blow(V2 pos, V2 dir, float rad){
+
+}
 void makeSinglePar(float x,float y,float vx,float vy){
   b2ParticleDef   d;
   b2ParticleColor bc( 0 , 0 , 1 , 1 );
@@ -245,7 +248,7 @@ void step(){
 //      glRecti(-siz,-siz,siz,siz);
     }
     else{
-#define de
+#define deb
 #ifndef deb
       //bod->GetFixtureList()->GetShape
 #endif
