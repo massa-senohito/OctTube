@@ -9,8 +9,8 @@ void playSquidDamageSound()
 }
 AnimAsset* animAsset;
 
-const auto renderWid = 320.0 / 6.;
-const auto renderHei = 240.0 / 6.;
+const auto renderWid = 320.0f / 6.f;
+const auto renderHei = 240.0f / 6.f;
 const auto epsilon= 0.003;
 bool nearBy(const b2Vec2& pos,float32 x,float32 y){
     auto px=pos.x-x;
@@ -57,7 +57,30 @@ void Obstacle::Movable()
 //    float32 tox;float32 toy;
     movable=true;
 }
-
+CircleSensor::CircleSensor(World w,V2 pos,V2 dir,float rad){
+  s    =  new b2CircleShape;
+	s    -> m_radius = rad;
+  bdef =  new b2BodyDef;
+	bdef -> position=pos;
+	bod  =  w->CreateBody( bdef );
+  fix  =  bod->CreateFixture( s , 0 );
+  e    =  new EnemyData( 0 , "typ" );
+  e    -> browDir = V2 ( dir );
+  fix  -> SetSensor(true);
+  fix  -> SetUserData  ( e );
+}
+CircleSensor::~CircleSensor(){
+  auto w=bod->GetWorld();
+  for (auto j=w->GetJointList(); j!=nullptr; j=j->GetNext())
+  {
+    w->DestroyJoint(j);
+  }
+  delete e->Damage;
+  w->DestroyBody(bod);
+  delete s;
+  delete e;
+  delete bdef;
+}
 //‚‘¬‰»‚·‚é‚È‚çsize‚ÍV2‚É‚µ‚È‚¢‚Å‚¨‚­
 Obstacle::Obstacle(World w,b2Vec2 pos,b2Vec2 size)
   :x(0),y(0),xx(0),yy(0),inverceMove(false),movable(false),inverceCount(0)
@@ -143,7 +166,7 @@ Body* Enemy::sqTentacle(V2 parentPos){
 }
 void Enemy::squidProfile(World w,V2 pos){
   squidAsset =( new SoundAsset(Squid));
-  animAsset = new AnimAsset(Squid);
+  animAsset  = new AnimAsset(Squid);
   actBox            = b2AABB();
   actBox.upperBound = V2(renderWid-10,renderHei);
   actBox.lowerBound = V2(-renderWid+10,-renderHei);
@@ -173,7 +196,7 @@ void Enemy::squidProfile(World w,V2 pos){
 
   auto mass  = body->GetMass();
 }
-Enemy::Enemy(b2World* w,b2Vec2 pos,float32 size)
+Enemy::Enemy(World w,b2Vec2 pos,float32 size)
 :Age(0), points(nullptr)
 {
   //switch
@@ -323,10 +346,10 @@ void Enemy::Update(bool move){
   int animFl = state ? Age % animLen : animLen - Age % animLen;
   //anim->DamageColor(*e->Damage);//‘«‚È‚Ç‚ÉŒÂ•Ê‚É‚Í•\Ž¦‚Å‚«‚È‚¢
   //renderVertice( points , pointsLength , animFl/2 ); //’x‚­‚µ‚Ä‚é
-  glBegin(GL_LINES);
-  anim->UpdateAnim(animFl/2);
+  drawLines([&](){
+    anim->UpdateAnim(animFl / 2);
+  });
   //anim->NoUse();
-  glEnd();
   glLoadIdentity();
   //return pos;
 }
@@ -336,7 +359,6 @@ Body Enemy::GetBody(){
 //EnemyData
 Enemy::~Enemy(){
   auto w=body->GetWorld();
-  ;//next‚È‚­‚³‚È‚¢‚¾‚ë‚¤‚©
   for (auto j=w->GetJointList(); j!=nullptr; j=j->GetNext())
   {
     w->DestroyJoint(j);

@@ -14,18 +14,25 @@ typedef b2Vec2 V2;
 //error LNK2038 : '_ITERATOR_DEBUG_LEVEL' の不一致が検出されました。
 
 void playSquidDamageSound();
+typedef void(* OnHit)() ;
+#define zerov V2(0, 0)
 class EnemyData{
 public:
   const char* Name=nullptr;
   int* Damage=nullptr;
-  (void)(* PlayDamagedSound)();
-  EnemyData(int d, const char* n){
+  OnHit onhit;
+  V2 browDir;
+  EnemyData(int d, const char* n) :onhit(playSquidDamageSound), browDir(zerov)
+  {
     Damage = new int(d);
     Name = n;
-    PlayDamagedSound = playSquidDamageSound;
   }
-  EnemyData(){
+  EnemyData() :onhit(playSquidDamageSound), browDir(zerov)
+  {
   
+  }
+  void SetOnHit(OnHit h){
+    onhit = h;
   }
 };
 #ifdef _MANAGED
@@ -35,13 +42,24 @@ typedef array<float>^ Points;
 #define Vector std::vector
 #define Points float*
 typedef EnemyData* PEnemyData;
-//typedef const Points CPoints;
 #endif
 //PhysicSystemと分けた理由
 //  アルゴリズムが込み入ってきた
 //  コンストラクタが多く必要になった
 //    >新しい機能を追加するごとにコンストラクタが
 ///typedef const char* string;
+
+class CircleSensor{
+  PEnemyData e;
+  CShape s;
+  Fixture fix;
+  Body bod;
+  BodyDef bdef;
+public:
+  CircleSensor(World,V2 pos,V2 dir,float);
+  ~CircleSensor();
+};
+
 ref class Obstacle
 #ifdef _MANAGED
 : IDisposable
@@ -77,6 +95,7 @@ ref class Enemy
   Points points; //draw時に名前で区別したほうが設計変更が少ないので、とりあえずおいておく
   EnemyData* e;
   int pointsLength;
+
   void squidProfile(World,V2);
   void motion();
   AnimAsset* anim;

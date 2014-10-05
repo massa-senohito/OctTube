@@ -15,6 +15,9 @@ public:
     bool ShouldCollide(PSys,int32,int32);
     ~MyContactFilter(void);
 };
+class MyContactListener :public b2ContactListener{
+  void BeginContact(PSys , b2ParticleBodyContact* );
+};
 //  グループインデックスが同じでaが0でないなら、aが正だと接触
 //if (filterA.groupIndex == filterB.groupIndex && filterA.groupIndex != 0)
 //	{

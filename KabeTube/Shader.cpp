@@ -167,6 +167,8 @@ void Shader::Render(int anim){
   int len = esize * 2;
   int pl=anim*len+len;
   glPushMatrix();
+  //renderer->DrawEnemy‚Æ‚·‚é–@‚ªˆê‰ƒŒƒ“ƒ_[Œn‚Ì‚±‚Æ‚È‚Ì‚Å
+
   //glTranslatef( -59 , -90 , 0 );
   //glEnableClientState(GL_VERTEX_ARRAY);
   //glVertexPointer(2, GL_FLOAT, 0, &points[anim*len]);

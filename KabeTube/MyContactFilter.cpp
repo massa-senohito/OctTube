@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "MyContactFilter.h"
 #include "Obstacle.h"
-void collideAndDamage(b2Fixture* f, PSys sys, int32 a){
-  auto pdata = sys->GetUserDataBuffer()[a];
+void collideAndDamage(b2Fixture* f, PSys sys, int32 ind){
   //ŠÑ’Ê‘®«‚È‚çÁ–Å‚Ü‚Å‚ÌŽžŠÔ‚ðÝ’è‚·‚é‚¾‚¯A‚Ý‚½‚¢‚È‚Ì‚ª‚Å‚«‚é
-  sys->DestroyParticle(a);
   auto udata = reinterpret_cast<EnemyData*>(f->GetUserData());
   auto p     = udata->Damage;
+  sys->DestroyParticle(ind);
   *p         = *p + 1;
-  if (udata->PlayDamagedSound)udata->PlayDamagedSound();
+  if (udata->onhit)udata->onhit();
+  
 }
 MyContactFilter::MyContactFilter(void) :StoppingFlame(0)
 {
@@ -42,4 +42,17 @@ bool MyContactFilter::ShouldCollide(PSys sys,int32 a,int32 b){
 
 MyContactFilter::~MyContactFilter(void)
 {
+}
+void MyContactListener::BeginContact(PSys sys, b2ParticleBodyContact* con)
+{
+  auto f = con->fixture;
+  auto ind = con->index;
+  auto ud = f->GetUserData();
+  if (ud){
+    auto udata = reinterpret_cast<EnemyData*>(ud);
+    auto bdir = udata->browDir;
+    if (udata->Name != "typ");
+    else{ sys->ParticleApplyLinearImpulse(ind, bdir); }//‚à‚¤‚¿‚å‚¢‘å‚«‚­‚È‚Á‚½‚çenamydataŒp³
+    sys->ParticleApplyForce(ind, bdir);
+  }
 }

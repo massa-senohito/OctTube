@@ -5,10 +5,7 @@
 #include "Renderer.h"
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
-//#include "Box2D/Box2D.h"
-//using namespace System::Linq;
-//createRice //”S’…‚·‚é
-//createLiquid //…
+
 //csv‚ÅŒW”w’è
 
 //‚Æ‚è‚ ‚¦‚¸‚ÌİŒv
@@ -100,21 +97,24 @@ GLint es[]={
 };
 int ei=0;
 float per = 0.0f;
+int xd = 0;
+int yd = 0;
+int zd = 0;
 void fivePerlin(float z){
-  auto kiz = 0.1f;
+  auto kiz = 0.02f;
   auto to = 1;
   for (float i = -1; i < to; i += kiz){
     for (float j = -1; j < to; j += kiz)
     {
-      auto n =( stb_perlin_noise3(i, j, z)+1.0f)/2.0f;
+      auto n =( stb_perlin_noise3(i*10, j*10, z,xd,yd,zd)+1.0f)/2.0f;
 //    printf_s("%f ", n);
-      glBegin(es[ei]);
+      glBegin(es[5]);
       glColor3f(n, n, n);
       glVertex2f(j, i);
       glVertex2f(j+kiz, i);
       glVertex2f(j+kiz, i+kiz);
-      glEnd();
       glVertex2f(j, i+kiz);
+      glEnd();
     }
 //  printf_s("%s", "\n");
   }
@@ -153,7 +153,23 @@ void key(int key, int, int){
     ei++;
     if (es[ei] == -1)ei = 0;
   }
+  if (abs(per - 9.0f)<0.002f)per = 0.0f;
 }
+void nokey(unsigned char key, int, int){
+  auto q=key == 'q';
+  auto a=key == 'a';
+  auto s=key == 's';
+  auto w=key == 'w';
+  auto e=key == 'e';
+  auto d=key == 'd';
+  if (q){ ++xd; }
+  if (a){ --xd; }
+  if (w){ ++yd; }
+  if (s){ --yd; }
+  if (e){ ++zd; }
+  if (d){ --zd; }
+}
+
 void timert(int value) {
   //glRotatef(1 , 0.5 , 1 , 0.25);
   glutPostRedisplay();
@@ -180,6 +196,7 @@ int texTest(int argc , char ** argv){
   glutDisplayFunc(disp);
   glutTimerFunc(100 , timert , 0);
   glutSpecialFunc(key);
+  glutKeyboardFunc(nokey);
   glEnable(GL_TEXTURE_2D);
   glGenTextures(1 , &texName);
   glBindTexture(GL_TEXTURE_2D , texName);
@@ -205,9 +222,13 @@ void quitF(){
 int main(int argc,char* argv[])
 {
   try{
+
 	  //fivePerlin(1);
     //atexit(quitF);
-    kabeMain(argv[0]);
+
+    const char* testx = "glStateL";
+    auto si = strlen(testx);
+    //kabeMain(argv[0]);
     //texTest(argc,argv);
   }catch
 #ifdef _MANAGED

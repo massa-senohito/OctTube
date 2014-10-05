@@ -85,6 +85,7 @@ void eachParticle(std::function<void(V2&)> f){
  
 DebugDraw* dd;
 MyContactFilter* cfilter;
+MyContactListener* mlis;
 auto downGrav=-9.8f;
 b2Vec2 grav(0.0,9.8f);
 void PhysicSystem::makeOuterFence(int x,int y){
@@ -102,13 +103,8 @@ void PhysicSystem::makeOuterFence(int x,int y){
   obs->Add(f3);
   obs->Add(f4);
 }
-void MakeCircleSonsor(){
-	b2CircleShape cs;
-	cs.m_radius = 3;
-	BodyDef bdef;
-	bdef->position;
-	w->CreateBody(bdef);
-}
+
+
 PhysicSystem::PhysicSystem(void)
 {
   //toi=タイムオブインパクトｚｃ
@@ -140,11 +136,13 @@ PhysicSystem::PhysicSystem(void)
     b2Draw::e_particleBit | b2Draw::e_shapeBit );
   w->SetDebugDraw(dd);
   cfilter = new MyContactFilter;
-  
+  mlis = new MyContactListener;
   w->SetContactFilter(cfilter);
+  w->SetContactListener(mlis);
   obs = gcnew Obss;
   makeOuterFence(73,53);
   ens = gcnew Enes;
+  tys = gcnew Tys;
 }
 inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   auto shape = new b2PolygonShape();
@@ -154,6 +152,10 @@ inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   
   return shape;
 }
+auto pflag=b2_tensileParticle //;
+    | b2_fixtureContactFilterParticle
+    | b2_fixtureContactListenerParticle
+    ;
 void makeParticle(float x,float y){
   b2ParticleGroupDef d;//d.particleCount=5; サンプル見比べておこう
   uint8 zero = 0 ; uint8 one = 1;
@@ -165,8 +167,7 @@ void makeParticle(float x,float y){
   //circle->m_radius=
   d.shape    = createBox( 3 , 3 , pos );
   
-  d.flags    = b2_tensileParticle //;
-    | b2_fixtureContactFilterParticle;
+  d.flags = pflag;
   d.position = pos ;
   auto pg    = particleSys->CreateParticleGroup(d);
   //dにもpgにもdencityない,particleSysに
@@ -191,8 +192,10 @@ void makeFlyBox(float x,float y){
 void makeFlyFish(){
   //makeFlyBox(-12,12).Joint();
 }
-void PhysicSystem::Blow(V2 pos, V2 dir, float rad){
-
+Typhoon* PhysicSystem::Blow(V2 pos, V2 dir, float rad){
+  auto typ = new Typhoon(w,pos,dir,rad);
+  tys->Add(typ);
+  return typ;
 }
 void makeSinglePar(float x,float y,float vx,float vy){
   b2ParticleDef   d;
@@ -200,8 +203,7 @@ void makeSinglePar(float x,float y,float vx,float vy){
   d.color    = bc;
   d.velocity = V2(vx,vy);
   d.position = V2(x,y);
-  d.flags    = b2_tensileParticle
-     |b2_fixtureContactFilterParticle;
+  d.flags    = pflag;
   auto par   = particleSys->CreateParticle(d);
 }
 //パーティクルを継承した KomeParticle , StreamParticle 
@@ -252,7 +254,7 @@ void step(){
       //glRecti(-siz,-siz,siz,siz);
     }
     else{
-#define de
+#define deb
 #ifndef deb
       //bod->GetFixtureList()->GetShape
 #endif
@@ -316,19 +318,16 @@ PhysicSystem::~PhysicSystem(){
   if (cfilter != nullptr)
     delete cfilter;
   cfilter = nullptr;
+  delete mlis;
+  mlis = nullptr;
   delFences();
   delete obs;
   obs=nullptr;
-  //vectorにしたかったがマネージ型はlistに放り込めない
-  //リークするかもしれないがとりあえず
-  //for (int i = 0; i < ens->Count; i++)
-  //{
-  //  delete ens[i];
-  //}
   ens->Clear();
   delete ens;
   ens=nullptr;
-  
+  delete tys;
+  tys = nullptr;
   w->DestroyParticleSystem(particleSys);
 
   particleSys=nullptr;

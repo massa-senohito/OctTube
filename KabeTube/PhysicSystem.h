@@ -23,6 +23,10 @@ typedef Vector<Obstacle*> Obss;
 typedef Vector<Enemy*> Enes;
 typedef Vector<Obstacle*>* PObss;
 typedef Vector<Enemy*>* PEnes;
+typedef CircleSensor Typhoon;
+typedef Typhoon* PTyphoon;
+typedef Vector<Typhoon*>* PTys;
+typedef Vector<Typhoon*> Tys;
 #define gcnew new
 #endif
 ref class PhysicSystem
@@ -32,6 +36,7 @@ ref class PhysicSystem
 {
   PObss obs;
   PEnes ens;
+  PTys  tys;
   void makeOuterFence(int,int);
   void jointDraw();
 public:
@@ -43,6 +48,6 @@ public:
   PEnemy addEnemy(float,float,float rad);
   bool AllEnemyFired();
   void delFences();
-  void Blow(V2 pos,V2 dir,float rad);
+  PTyphoon Blow(V2 pos,V2 dir,float rad);
 };
 

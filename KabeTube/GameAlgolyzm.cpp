@@ -8,9 +8,26 @@ Renderer* rend;
 //焼けてる感じを出す
 //ソケット通じてデバッガを作る
 //ステージクリア時にアニメを止める
+//glRectで簡易描画
 //蒸発してもその場にエフェクトとセンサーを作る
 //団扇のためにセンサーを作る
 //stbで画像ロードエフェクト
+//type Game =
+//  let loop =
+//    let poss = enes | >Seq.map GetPos
+//    for i in enes->
+//      let p = i.Pos
+//    if debug.RenderSimple then i.Draw else drawRect p
+//  let OnClear
+//    setBackScreen
+//    enes|>iter(fun e->e.NoAnim)
+//    pla |>iter(fun p->p.Nodeath;p.Smoke|>)
+//  let OnBubbleHit pos
+//    effect
+//    createBlowOut pos
+//  let
+//    let edata=recast(fix->udata)
+//    edata->DamagedYou(bubble)
 uint getSvgVLen(){
   return svgVLength;
 }
@@ -223,7 +240,15 @@ void fileRead(String filename,PPhysicSystem sys){
    if(name=="dragonbody"){
      makeDragon(sys,coefar);
    }
-   if(name=="fish"){
+   if(name=="blow"){
+     auto x = strTofloat(coefar[1]);
+     auto y = strTofloat(coefar[2]);
+     auto dx = strTofloat(coefar[3]);
+     auto dy= strTofloat(coefar[4]);
+     auto rad= strTofloat(coefar[5]);
+     sys->Blow(
+       V2(x, y), V2(dx,dy), rad
+     );
    }
   }
 }
@@ -266,10 +291,10 @@ void onRenderFrame(int time){
       float vy=sin(toRad(angle));
       makeSinglePar
         ( posx , posy , vx*power , vy*power );
-      makeSinglePar
-        ( posx-3 , posy-3 , vx*power , vy*power );
-      makeSinglePar
-        ( posx-2 , posy-5 , vx*power , vy*power );
+//      makeSinglePar
+//        ( posx-3 , posy-3 , vx*power , vy*power );
+//      makeSinglePar
+//        ( posx-2 , posy-5 , vx*power , vy*power );
       lastFiredFrame=time;
     }
   }
@@ -336,7 +361,6 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   //char ** arg= strMap(args);//opentkだと？
   ///drawable,steppable作るべき
   auto csv = path+"\\coe.csv";
-  std::cout << csv<< std::endl;;
   fileRead(csv.data(),sys);
 
   rend=new Renderer([](int count){

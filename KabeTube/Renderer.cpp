@@ -432,7 +432,12 @@ void setSphereMap(){
   //スフィアマップはカメラからの角度でマッピングされるため、カメラが移動すると、マップもずれる
   //キューブマップも同じ
 }
-
+void drawLines(std::function<void(void)> f)
+{
+  glBegin(GL_LINES);
+  f();
+  glEnd();
+}
 //b2Drawのを参考にする
 float range[2];
 void getOnce(){

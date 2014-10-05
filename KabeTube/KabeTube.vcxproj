@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>liquidfun.lib;glew32.lib;freeglut_staticd.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>liquidfun.lib;glew32.lib;freeglut_staticd.lib;OpenAL32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(MSBuildProjectDirectory)/../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClInclude Include="DebugDraw.h" />
     <ClInclude Include="Assets.h" />
+    <ClInclude Include="DebugLogger.h" />
     <ClInclude Include="GameAlgolyzm.h" />
     <ClInclude Include="GUIUtil.h" />
     <ClInclude Include="MyContactFilter.h" />
@@ -107,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets.cpp" />
+    <ClCompile Include="DebugLogger.cpp" />
     <ClCompile Include="GameAlgolyzm.cpp" />
     <ClCompile Include="GUIUtil.cpp" />
     <ClCompile Include="OctTube.cpp" />
