@@ -6,9 +6,23 @@
 #include "MyContactFilter.h"
 #include <list>
 #include <functional>
+typedef b2ParticleSystemDef* PDef ;
+typedef b2ParticleSystem* PSys;
+typedef b2World* World;
+typedef b2Body* Body;
+typedef b2BodyDef* BodyDef;
+typedef b2Fixture* Fixture;
+typedef b2PolygonShape* PShape;
+typedef b2CircleShape* CShape;
+typedef b2Vec2 V2;
 #define red 0.9f,0.2f,0.2f
+
+#define Vector DotnetList
+typedef Obstacle*          PObstacle;
+typedef DotnetList<Obstacle*>  Obss;
+typedef DotnetList<Obstacle*>* PObss;
+PObss obs;
 using namespace std;//using string=std::string;
-typedef float32 f32;
 struct DeleteObj {
   template <typename T>
   void operator()(const T* ptr) const {
@@ -18,7 +32,6 @@ struct DeleteObj {
 };
 void makeFlyBox(float,float);
      //Shapes; 
-
 //void loadStage(PhysicSystem^ p ){
 //  //auto test=split("0.1,2.2,11.0,9.3,2.5,9.9",',');
 //  auto lines=System::IO::File::ReadAllLines("");
@@ -44,21 +57,15 @@ void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
 }
 //#define EneMap std::map<Enemy^,bool>
 //EneMap* enemyLiving;
-PEnemy PhysicSystem::addEnemy(f32 x,f32 y,f32 rad){
-  auto e=gcnew Enemy(w,V2(x,y),rad);
-  ens->Add(e);
-  //auto em=enemyLiving->emplace(e,true);
-  //em.first
-  return e;
-}
+  //std::for_each(obs->begin(),obs->end(),DeleteObj());
+  //fenceだけ消すために、delExactObstacleの前にディスパッチが必要
+
 void delExactObstacle(PObstacle b){
   //w->DestroyBody(b->GetBody());
   //b->Dispose();
   delete b;
 }
 void PhysicSystem::delFences(){
-  //std::for_each(obs->begin(),obs->end(),DeleteObj());
-  //fenceだけ消すために、delExactObstacleの前にディスパッチが必要
 
 #ifdef _MANAGED
   for each (PObstacle var in obs)
@@ -66,13 +73,14 @@ void PhysicSystem::delFences(){
     delExactObstacle(var);
   }
 #else
-  std::vector<PObstacle>::iterator d = obs->Data->begin();
-  std::for_each(d,obs->Data->end(),delExactObstacle);
+  auto data = obs->Data;
+  std::vector<PObstacle>::iterator d = data->begin();
+  std::for_each(d,data->end(),delExactObstacle);
 #endif
   obs->Clear();
 }
 void eachParticle(std::function<void(V2&)> f){
-  int length=particleSys->GetParticleCount();
+  auto length=particleSys->GetParticleCount();
   size_t vsize=sizeof V2;
   size_t csize=sizeof b2Color;
   auto poss=particleSys->GetPositionBuffer();
@@ -84,11 +92,11 @@ void eachParticle(std::function<void(V2&)> f){
 //w->GetParticleFlagsBuffer()[i] |= b2_zombieParticle;
  
 DebugDraw* dd;
-MyContactFilter* cfilter;
+MyContactFilter*   cfilter;
 MyContactListener* mlis;
 auto downGrav=-9.8f;
 b2Vec2 grav(0.0,9.8f);
-void PhysicSystem::makeOuterFence(int x,int y){
+void PhysicSystem::makeOuterFence(f32 x,f32 y){
   //sizeのせいで外にはみ出す可能性がある
   auto f1= gcnew Obstacle
     ( w , V2( x / 2.f , 0.f ) , V2( 1.f , y ) );
@@ -105,11 +113,17 @@ void PhysicSystem::makeOuterFence(int x,int y){
 }
 
 
+int PhysicSystem::GetStopping() {
+  return cfilter->StoppingFlame;
+}
+World PhysicSystem::GetWorld(){
+  return w;
+}
 PhysicSystem::PhysicSystem(void)
+  
 {
   //toi=タイムオブインパクトｚｃ
   w=new b2World(grav);
-  
   //位置と接触フラグなどしかもってない
   //pd.position
   //粘性係数,大きさ、色のミキシングなど
@@ -127,7 +141,7 @@ PhysicSystem::PhysicSystem(void)
   particleSys=w->CreateParticleSystem(particleSysDef);
   //particleSys のdencityとstride(stride*diameter)で質量もとめられている
   //しかし、パーティクル同士の接触の振る舞いには関与しない
-  particleSys->SetDensity(0.8);
+  particleSys->SetDensity(0.8f);
   //パーティクルグループdefでshapeを指定して
   //時間で削除するようにする
   particleSys->SetDestructionByAge(true);
@@ -136,13 +150,11 @@ PhysicSystem::PhysicSystem(void)
     b2Draw::e_particleBit | b2Draw::e_shapeBit );
   w->SetDebugDraw(dd);
   cfilter = new MyContactFilter;
-  mlis = new MyContactListener;
-  w->SetContactFilter(cfilter);
+  mlis    = new MyContactListener;
+  obs     = gcnew Obss;
+  w->SetContactFilter  (cfilter);
   w->SetContactListener(mlis);
-  obs = gcnew Obss;
   makeOuterFence(73,53);
-  ens = gcnew Enes;
-  tys = gcnew Tys;
 }
 inline PShape createBox(float32 hx,float32 hy,const b2Vec2& cen){
   auto shape = new b2PolygonShape();
@@ -192,11 +204,6 @@ void makeFlyBox(float x,float y){
 void makeFlyFish(){
   //makeFlyBox(-12,12).Joint();
 }
-Typhoon* PhysicSystem::Blow(V2 pos, V2 dir, float rad){
-  auto typ = new Typhoon(w,pos,dir,rad);
-  tys->Add(typ);
-  return typ;
-}
 void makeSinglePar(float x,float y,float vx,float vy){
   b2ParticleDef   d;
   b2ParticleColor bc( 0 , 0 , 1 , 1 );
@@ -223,10 +230,10 @@ void PhysicSystem::jointDraw(){
     auto ab = jl->GetAnchorB();
     auto ba = jl->GetBodyA()->GetPosition();
     auto bb = jl->GetBodyB()->GetPosition();
-    dd->DrawCircle( aa , 0.3 , col);
-    dd->DrawCircle( ab , 0.3 , col);
-    dd->DrawCircle( bb , 0.6 , col);
-    dd->DrawCircle( ba , 0.6 , col);
+    dd->DrawCircle( aa , 0.3f , col);
+    dd->DrawCircle( ab , 0.3f , col);
+    dd->DrawCircle( bb , 0.6f , col);
+    dd->DrawCircle( ba , 0.6f , col);
     jl = jl->GetNext();
   }
 }
@@ -271,63 +278,20 @@ void step(){
 
 
 }
-bool PhysicSystem::AllEnemyFired(){
-  auto count = ens->Count;
-  auto& e = (*ens);
-  for (int i = 0; i < count; i++)
-  {
-    if (!e[i]->IsAllMeatFired())return false;
-  }
-  return true;
-}
-std::string tos(int i){ return std::to_string(i)+'\n'; }
-std::string leg(int i){ return "leg"+tos(i)+": "; }
 
+#define SAFE_DELETE(p)           do { if(p) { delete (p); (p) = nullptr; } } while(0)
 ///ワールドをステップさせ、同時に描画します
 void PhysicSystem::Step(){
-
-#ifdef _MANAGED
-  for each (PEnemy var in ens)
-  {
-    var->Update();
-    //列挙中に消えるとめんどくさいのでmap<,bool>
-    //if(var)
-  }
-#else
-  std::for_each(ens->Data->begin(), ens->Data->end(), [](PEnemy i){i->Update(cfilter->StoppingFlame==0); });
-#endif
-  if( !AllEnemyFired())
-    step();
-  else{
-    //結果画面表示
-    auto data = ens->Data;
-    auto gain = [](PEnemy e){return e->GainPoints(); };
-    auto ps = gain(data->at(0));  //Map(*data, gain);
-    glRasterPos2f(10, 10);
-    auto clrstr = std::string("squid: ") + tos(ps[0])
-      +leg(0)+ tos(ps[1]) + leg(1)+tos(ps[2]) + leg(2)+tos(ps[3]);
-    if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
-    glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10, reinterpret_cast<const unsigned char*>(clrstr.data()));
-  }
-  //jointDraw();
+  step();
 }
 PhysicSystem::~PhysicSystem(){
-  if(dd!=nullptr)
-   delete dd;
-  dd=nullptr;
-  if (cfilter != nullptr)
-    delete cfilter;
-  cfilter = nullptr;
+
+  delFences();
+  SAFE_DELETE(obs);
+  SAFE_DELETE(dd);
+  SAFE_DELETE(cfilter);
   delete mlis;
   mlis = nullptr;
-  delFences();
-  delete obs;
-  obs=nullptr;
-  ens->Clear();
-  delete ens;
-  ens=nullptr;
-  delete tys;
-  tys = nullptr;
   w->DestroyParticleSystem(particleSys);
 
   particleSys=nullptr;

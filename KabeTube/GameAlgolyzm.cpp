@@ -55,7 +55,7 @@ namespace File{
   }
 }
 namespace Convert{
-	float ToSingle(String str){
+	double ToSingle(String str){
     return atof(str);
 	}
 }
@@ -123,6 +123,8 @@ let bejx xx xxx t=
 (tt t) * xx * (t3 t) * xxx+ttt(t)
 */
 const float onef = 1.0f;
+PEnes ens;
+PTys  tys;
 float bej(float t){
   return 3.0f * (onef - t)*(onef - t)*t *
     onef * 3.0f * t * t *(onef - t)  * onef + t*t*t;
@@ -139,7 +141,8 @@ std::vector<std::string> Split(std::string str, char delim){
 float strTofloat(std::string str){
     return Convert::ToSingle(str.c_str());
 }
-void makeDragon(PPhysicSystem sys,stringArray coes ){
+void GameAlgolyzm::makeDragon(stringArray coes )
+{
   //縦に動く,x10y12に初期値から加速度20で移動,（こげやすさ
   auto name = coes[0];
   auto pat  = coes[1];
@@ -149,7 +152,7 @@ void makeDragon(PPhysicSystem sys,stringArray coes ){
     
   }
   //-16,11でとばす
-  auto enemy = sys->addEnemy(-32,0,1);
+  auto enemy = addEnemy(-32,0,1);
   
   enemy->Impulse(V2(6,11));
   auto ps = Assets::getSquidPoints();
@@ -212,7 +215,8 @@ Points svgRead(String name){
   }
   return nullptr;
 }
-void fileRead(String filename,PPhysicSystem sys){
+void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
+{
   auto fi=File::ReadAllLines(filename);
 #ifdef _MANAGED
   int c=fi->Length;
@@ -238,7 +242,7 @@ void fileRead(String filename,PPhysicSystem sys){
      sys->addFence(x,y,sx,sy);
    }
    if(name=="dragonbody"){
-     makeDragon(sys,coefar);
+     makeDragon(coefar);
    }
    if(name=="blow"){
      auto x = strTofloat(coefar[1]);
@@ -246,7 +250,7 @@ void fileRead(String filename,PPhysicSystem sys){
      auto dx = strTofloat(coefar[3]);
      auto dy= strTofloat(coefar[4]);
      auto rad= strTofloat(coefar[5]);
-     sys->Blow(
+     Blow(
        V2(x, y), V2(dx,dy), rad
      );
    }
@@ -258,6 +262,9 @@ int lastFiredFrame=int(0);
 float angle=float(90);
 #define pos 0.5f,0.4f
 float posx = 29; float posy = -18.5f;
+bool AllEnemyFired(){
+  return false;
+}
 //float scalex = 0, scaley = -98.5;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
@@ -267,7 +274,7 @@ void onRenderFrame(int time){
   //if(c%50==0){makeParticle(pos);}
   //stepできるようになったので
   sys->Step();
-
+  auto data = ens->Data;
   //クリップ範囲から離れてしまう
   glTranslatef( posx + 30 , posy - 60 , 0.0f );
   glRotatef(180, 1, 0, 0);
@@ -284,17 +291,18 @@ void onRenderFrame(int time){
   //吹き飛ばせるように
   //drawClothHair(angle);
   glLoadIdentity();
+  bool p[Key::Length] = { Key::GetPushed() };
   //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
-    if(time-lastFiredFrame>10 && !sys->AllEnemyFired()){
+    if(time-lastFiredFrame>10 && !AllEnemyFired()){
       float vx=cos(toRad(angle));
       float vy=sin(toRad(angle));
       makeSinglePar
         ( posx , posy , vx*power , vy*power );
-//      makeSinglePar
-//        ( posx-3 , posy-3 , vx*power , vy*power );
-//      makeSinglePar
-//        ( posx-2 , posy-5 , vx*power , vy*power );
+      makeSinglePar
+        ( posx-3 , posy-3 , vx*power , vy*power );
+      makeSinglePar
+        ( posx-2 , posy-5 , vx*power , vy*power );
       lastFiredFrame=time;
     }
   }
@@ -330,7 +338,12 @@ void onRenderFrame(int time){
   glLoadIdentity();
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
+  :sys(gcnew PhysicSystem)
+  //:ens(gcnew Enes),
+  //tys(gcnew Tys)
 {
+  ens = gcnew Enes;
+  tys = gcnew Tys ;
   auto path    = args[0];
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel+1);
@@ -356,15 +369,15 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   int len = 0; //(args->Length);
   //glewInit呼ばないといけないので
   GLUT_INITs(len ,nullptr);
-  sys = gcnew PhysicSystem();
   sys->MakeParticle(pos);
   //char ** arg= strMap(args);//opentkだと？
   ///drawable,steppable作るべき
   auto csv = path+"\\coe.csv";
   fileRead(csv.data(),sys);
 
-  rend=new Renderer([](int count){
+  rend=new Renderer([&](int count){
     onRenderFrame(count);
+    Step();
   }
   , [&](){delete this; }
   );
@@ -377,10 +390,64 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   rend->renderPolygon(nullptr,0);
   glutMainLoop();
 }
-///クリア氷菓
+///クリア評価
 float howAllMeatFired()// ms
 {
   return 1;
+}
+
+bool GameAlgolyzm::AllEnemyFired(){
+  auto count = ens->Count;
+  auto& e = (*ens);
+  for (int i = 0; i < count; i++)
+  {
+    if (!e[i]->IsAllMeatFired())return false;
+  }
+  return true;
+}
+Typhoon* GameAlgolyzm::Blow(V2 p, V2 dir, float rad){
+  auto typ = new Typhoon(sys->GetWorld(),p,dir,rad);
+  tys->Add(typ);
+  return typ;
+}
+PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad){
+  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad);
+  ens->Add(e);
+  //auto em=enemyLiving->emplace(e,true);
+  //em.first
+  return e;
+}
+std::string tos(int i){ return std::to_string(i)+'\n'; }
+std::string leg(int i){ return "leg"+tos(i)+": "; }
+void GameAlgolyzm::Step(){
+
+#ifdef _MANAGED
+  for each (PEnemy var in ens)
+  {
+    var->Update();
+    //列挙中に消えるとめんどくさいのでmap<,bool>
+    //if(var)
+  }
+#else
+  auto stopping = sys->GetStopping();
+  auto data = ens->Data;
+  std::for_each(data->begin(), data->end(), [&stopping](PEnemy i){i->Update(stopping==0); });
+#endif
+  if( !AllEnemyFired())
+    step();
+  else{
+    //結果画面表示
+    auto data = ens->Data;
+    auto gain = [](PEnemy e){return e->GainPoints(); };
+    auto ps = gain(data->at(0));  //Map(*data, gain);
+    glRasterPos2f(10, 10);
+    auto clrstr = std::string("squid: ") + tos(ps[0])
+      +leg(0)+ tos(ps[1]) + leg(1)+tos(ps[2]) + leg(2)+tos(ps[3]);
+    if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
+    glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
+      reinterpret_cast<const unsigned char*>(clrstr.data()));
+  }
+  //jointDraw();
 }
 void GameAlgolyzm::
   Render()
@@ -395,6 +462,9 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
+  SAFE_DELETE(ens);
+  SAFE_DELETE(tys);
+
   SAFE_DELETE(rend);
   DA ( Assets::squid);
   DA ( Assets::squidElem);

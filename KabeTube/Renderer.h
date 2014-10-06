@@ -30,4 +30,5 @@ enum  Key{
   bool isRightPushed();
   bool isUpPushed();
   bool isDownPushed();
+  bool* GetPushed();
 }

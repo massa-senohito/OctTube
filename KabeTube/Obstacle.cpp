@@ -132,10 +132,10 @@ PShape sqTentShape(V2& pos,fl ang){
 const int tentacleCount = 3;
 Body* Enemy::sqTentacle(V2 parentPos){
   auto bods   = new Body[tentacleCount];//shape‚É’Ç‰Á‚·‚ê‚Î‚¢‚¢‚ñ‚¶‚á‚È‚¢
-  auto underp = parentPos + V2(31, -20);
-  auto street =sqTentShape(underp, 0);
-  auto le     =sqTentShape(underp+V2( 7.1 , 2) ,-5.7);
-  auto ri     =sqTentShape(underp+V2(-7.1 , 2) , 5.7);
+  auto underp = parentPos + V2(31.f, -20.f);
+  auto street =sqTentShape(underp, 0.f);
+  auto le     =sqTentShape(underp+V2( 7.1f , 2.f) ,-5.7f);
+  auto ri     =sqTentShape(underp+V2(-7.1f , 2.f) , 5.7f);
   auto def      = new b2BodyDef;
   def->position = parentPos;
   def->type     = b2BodyType::b2_dynamicBody;
@@ -166,7 +166,7 @@ Body* Enemy::sqTentacle(V2 parentPos){
 }
 void Enemy::squidProfile(World w,V2 pos){
   squidAsset =( new SoundAsset(Squid));
-  animAsset  = new AnimAsset(Squid);
+  animAsset  =  new AnimAsset (Squid) ;
   actBox            = b2AABB();
   actBox.upperBound = V2(renderWid-10,renderHei);
   actBox.lowerBound = V2(-renderWid+10,-renderHei);

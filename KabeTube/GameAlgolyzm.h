@@ -1,4 +1,28 @@
 #pragma once
+
+#include <vector>
+#ifdef _MANAGED
+#define List System::Collections::Generic::List
+typedef List<Obstacle^>^ Obss;
+typedef List<Enemy^>^ Enes;
+#define Obs List<Obstacle^>
+#define Ens List<Enemy^>
+#define PEnemy Enemy^
+#else
+#include "Obstacle.h"
+#include "PhysicSystem.h"
+
+typedef Enemy* PEnemy;
+typedef DotnetList<Enemy*>    Enes;
+typedef DotnetList<Enemy*>*   PEnes;
+typedef CircleSensor Typhoon;
+typedef Typhoon* PTyphoon;
+typedef DotnetList<Typhoon*>  Tys;
+typedef DotnetList<Typhoon*>* PTys;
+#endif
+
+typedef float32 f32;
+
 void drawClothHair(float);
 float toRad(float);
 float toDeg(float);
@@ -21,6 +45,7 @@ typedef array<string>^ stringArray;
 #define PPhysicSystem PhysicSystem^
 #else
 //include使わないための必死の策
+#undef Vector
 #define Vector std::vector
 #define Points float*
 #define PPhysicSystem PhysicSystem*
@@ -29,7 +54,6 @@ typedef array<string>^ stringArray;
 #define gcnew new
 //typedef const Points CPoints;
 //Obstacle,rendererにもある、スクリプト対処か
-#define ref /**/
 #endif
 
 //https://github.com/cocos2d/cocos2d-x/blob/v3/cocos/platform/CCPlatformMacros.h
@@ -47,8 +71,15 @@ uint getSvgVLen();
 float bej(float t);
 class GameAlgolyzm
 {
+  PhysicSystem* sys;
+  PEnemy addEnemy(f32,f32,f32 rad);
+  bool AllEnemyFired();
+  PTyphoon Blow(V2 pos,V2 dir,f32 rad);
+  void makeDragon(stringArray coes);
+  void fileRead(String filename, PPhysicSystem sys);
 public:
   GameAlgolyzm(stringArray arg);
+  void Step();
   void Render();
   ~GameAlgolyzm(void);
 };

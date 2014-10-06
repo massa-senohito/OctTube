@@ -6,6 +6,9 @@
 namespace Key{
 
   bool pushed[Key::Length];
+  bool* GetPushed(){
+    return pushed;
+  }
   int lastPushed[Key::Length];
   bool isAPushed(){
       return pushed[Key::A];

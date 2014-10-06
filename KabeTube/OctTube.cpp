@@ -95,11 +95,11 @@ GLint es[]={
   GL_POLYGON,
   -1
 };
-int ei=0;
+int   ei=0;
 float per = 0.0f;
-int xd = 0;
-int yd = 0;
-int zd = 0;
+int   xd = 0;
+int   yd = 0;
+int   zd = 0;
 void fivePerlin(float z){
   auto kiz = 0.02f;
   auto to = 1;
@@ -226,9 +226,7 @@ int main(int argc,char* argv[])
 	  //fivePerlin(1);
     //atexit(quitF);
 
-    const char* testx = "glStateL";
-    auto si = strlen(testx);
-    //kabeMain(argv[0]);
+    kabeMain(argv[0]);
     //texTest(argc,argv);
   }catch
 #ifdef _MANAGED

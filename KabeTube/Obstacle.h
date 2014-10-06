@@ -39,7 +39,6 @@ public:
 typedef array<float>^ Points;
 #else
 #define ref /**/
-#define Vector std::vector
 #define Points float*
 typedef EnemyData* PEnemyData;
 #endif
