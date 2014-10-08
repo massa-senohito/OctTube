@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
-
+#include "TextureTest.h"
 //csvÇ≈åWêîéwíË
 
 //Ç∆ÇËÇ†Ç¶Ç∏ÇÃê›åv
@@ -103,21 +103,31 @@ int   zd = 0;
 void fivePerlin(float z){
   auto kiz = 0.02f;
   auto to = 1;
+  auto count = 0;auto min = 255.0f;
+  auto pc = (to + 1) / kiz + 1;
   for (float i = -1; i < to; i += kiz){
     for (float j = -1; j < to; j += kiz)
     {
-      auto n =( stb_perlin_noise3(i*10, j*10, z,xd,yd,zd)+1.0f)/2.0f;
+      ++count;
+
+      auto n =( stb_perlin_noise3(i*10, j*10, z
+        ,xd,yd,zd)+1.0f)/2.0f;
+      n *= 255.0f;
+      if (min > n)min = n;
 //    printf_s("%f ", n);
-      glBegin(es[5]);
-      glColor3f(n, n, n);
-      glVertex2f(j, i);
-      glVertex2f(j+kiz, i);
-      glVertex2f(j+kiz, i+kiz);
-      glVertex2f(j, i+kiz);
-      glEnd();
+//      glBegin(es[5]);
+//      glColor3f(n, n, n);
+//      glVertex2f(j, i);
+//      glVertex2f(j+kiz, i);
+//      glVertex2f(j+kiz, i+kiz);
+//      glVertex2f(j, i+kiz);
+//      glEnd();
     }
 //  printf_s("%s", "\n");
   }
+  auto c=pc*pc;
+    //printf_s("%f ", max);
+
 }
 void disp( void ) {
   glClear(GL_COLOR_BUFFER_BIT);
@@ -136,7 +146,7 @@ void disp( void ) {
         glVertex2f(nine , -nine);
   */
   glScalef(scale,scale,1.0f);
-  //glBegin(es[ei]);
+  glBegin(es[5]);
   fivePerlin(per);
  // renderVertice(ps,Assets::squidPLen());
   //glEnd();
@@ -189,17 +199,17 @@ int texTest(int argc , char ** argv){
   }
 
   glutInit(&argc , argv);
-  glutInitWindowSize(400 , 300);
+  glutInitWindowSize( 400 , 300 );
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
   
   glutCreateWindow("Kitty on your lap");
-  glutDisplayFunc(disp);
-  glutTimerFunc(100 , timert , 0);
-  glutSpecialFunc(key);
-  glutKeyboardFunc(nokey);
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1 , &texName);
-  glBindTexture(GL_TEXTURE_2D , texName);
+  glutDisplayFunc ( disp );
+  glutTimerFunc   (100 , timert , 0);
+  glutSpecialFunc ( key );
+  glutKeyboardFunc( nokey );
+  glEnable        ( GL_TEXTURE_2D );
+  glGenTextures   (1 , &texName );
+  glBindTexture   (GL_TEXTURE_2D , texName);
 
   glTexImage2D(
     GL_TEXTURE_2D , 0 , 3 , TEXSIZE , TEXSIZE ,
@@ -228,6 +238,7 @@ int main(int argc,char* argv[])
 
     kabeMain(argv[0]);
     //texTest(argc,argv);
+    //TextureTest();
   }catch
 #ifdef _MANAGED
     (System::IO::FileLoadException^ e){

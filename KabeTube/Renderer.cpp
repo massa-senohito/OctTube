@@ -271,6 +271,10 @@ void display()
   //もしかしたらステンシルdisableにしないと？
   setPoly(3);
   testTex->BindVert(back);
+//  static auto uc = new float[]{ 0.3f, 0.3f, 0.3f };
+//  static auto dc = new float[]{0.8f, 0.5f, 0.2f};
+//  testTex->SetVertexColor2(uc, dc);
+
     //glPopAttrib();
   //teapotTest(false);
       //glClear(GL_STENCIL_BUFFER_BIT);
@@ -1765,6 +1769,15 @@ GLenum Renderer::renderPolygon(GLvoid* vert,int length){
   return glGetError();
 }
 
+auto stagecolor = new float*[]{
+    new float[]{ 0.9f, 0.9f, 1.0f },
+    new float[]{0.2f, 0.1f, 0.6f},
+    new float[]{ 0.3f, 0.3f, 0.3f },
+    new float[]{0.8f, 0.5f, 0.2f},
+};
+void Renderer::SetStage(Stages s){
+  testTex->SetVertexColor2(stagecolor[s*2], stagecolor[s*2 + 1]);
+}
 //オフスクリーンレンダ　ステンシルバッファ　キューブマップ
 
 void renderCircle(){

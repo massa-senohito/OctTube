@@ -51,8 +51,7 @@ void movableFence(f32 x,f32 y,
   
 }
 void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
-  auto b=gcnew Obstacle(w,V2(x,y),V2(sx,sy)); //©•ª‚ğnew‚µ‚½‚Æ‚«‚Élist‚É‚¢‚ê‚ÄAdelFences‚Ì‚Éíœ‚·‚é‚Ì‚Å
-  //obs->push_back(b);
+  auto b=gcnew Obstacle(w,V2(x,y),V2(sx,sy));
   obs->Add(b);
 }
 //#define EneMap std::map<Enemy^,bool>

@@ -59,6 +59,8 @@ void Texture::makeTestTex(){
 ///テストのためのグラフィックパターンテクスチャを生成する
 Texture::Texture(void)
 {
+  upc = new float[]{ 0.9f, 0.9f, 1.0f };
+  downc = new float[]{0.2f, 0.1f, 0.6f};
   //Shader texShader("textured.vert","textured.frag");
 }
 void inline bind2d(GLuint n){
@@ -68,13 +70,13 @@ void inline bind2d(GLuint n){
 void ver2(float x,float y){
     glVertex3f(x*bai,y*bai,0);
 }
-void setBlue(){
-    glColor3f(0.2f,0.1f,0.6f);
+void Texture::setBlue(){
+    glColor3fv(downc);
 }
-void setWhite (){
-    glColor3f(0.9f,0.9f,1.0f);
+void Texture::setWhite (){
+    glColor3fv(upc);
 }
-void regacyGLTex(float* vs,GLuint texName){
+void Texture::regacyGLTex(float* vs,GLuint texName){
     float x=vs[0]   ;float y=vs[1];
     float xx=vs[2]  ;float yy=vs[3];
     float xxx=vs[4] ;float yyy=vs[5];
@@ -115,6 +117,11 @@ void latestGLTex(float* vs,GLuint texName){
     //glVertexPointer  (2, GL_FLOAT, 0, vs);
     //glDrawElements(GL_POLYGON, 2, GL_UNSIGNED_INT, ind);
     //glDisableClientState(GL_VERTEX_ARRAY);
+}
+void Texture::SetVertexColor2(float* upcol,float* downcol)
+{
+  upc   = upcol;
+  downc = downcol;
 }
 void Texture::BindVert(float* vs){
     //色だけじゃなくデプスやステンシル、輝度値も

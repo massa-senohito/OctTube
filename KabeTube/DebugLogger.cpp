@@ -1,21 +1,11 @@
 #include "stdafx.h"
 #include "DebugLogger.h"
 #include  <winsock2.h>
-
-struct ConnectInfo
-{
-  const char* IPAdress;
-};
-void sockInit(){
-  WSADATA wsaData;
-  WORD ver2 = MAKEWORD(2, 0);
-  WSAStartup(ver2, &wsaData);
-}
-void sockExit(){
-  WSACleanup();
-}
+#define recast reinterpret_cast
 void handleSocketError(int err){
   switch (err) {
+  case WSABASEERR:
+    break;
   case WSASYSNOTREADY:
     printf("WSAシステムがネットワークへの接続準備ができていません\n");
     break;
@@ -29,11 +19,13 @@ void handleSocketError(int err){
     printf("WSAはこれ以上のプロセスを管理できません\n");
     break;
   case WSAEFAULT:
-    printf("WSADataが有効のポインタではありません\n");
+    printf("バッファのポインタが小さいか、無効です\n");
     break;
   case WSAECONNREFUSED:
     printf("要求が拒否されました\n");
     break;
+  case WSAENOTSOCK:
+    printf("socketに無効な値が渡されました");
   default:
     printf("other error: %d", err);
     //http://homepage1.nifty.com/yito/anhttpd/winsock_error.html
@@ -41,30 +33,58 @@ void handleSocketError(int err){
   }
 
 }
-SOCKADDR_IN initFromConnectInfo(ConnectInfo* ci){
-  SOCKADDR_IN addr;
-  addr.sin_port = htons(12345);
-  addr.sin_family = AF_INET;
-  addr.sin_addr.S_un.S_addr = inet_addr
-    (ci->IPAdress);
-  return addr;
+struct ConnectInfo
+{
+  const char* IPAdress;
+};
+SOCKET sock;
+SOCKADDR_IN* addr;
+WSADATA wsaData;
+WORD ver2 = MAKEWORD(2, 0);
+int error;
+//1024ポートを使用して
+void sockInit(){
+  error = WSAStartup ( ver2 , &wsaData );
+  if ( error ){ WSACleanup(); }
+  auto udp = IPPROTO_UDP;
+  sock    = socket ( AF_INET , SOCK_DGRAM, 0);
+  addr    = new SOCKADDR_IN;
+  auto ht          = htons ( 1024 );
+  addr->sin_port   = ht;
+  addr->sin_family = AF_INET;
+  addr->sin_addr.S_un.S_addr = inet_addr("127.0.0.1");;
+  //error = bind( sock , recast<sockaddr*>( addr ), sizeof( addr ));
+  //if (error==-1) handleSocketError( WSAGetLastError());
 }
-void sendCI(const SOCKET s, const SOCKADDR_IN* addr, const char* str){
-  auto len=strlen(str);
-  sendto(s, str, len, 0, reinterpret_cast<const struct sockaddr*>(addr), sizeof(addr));
+void sockExit(SOCKET s){
+  error = closesocket(s);
+  if (error==-1) handleSocketError( WSAGetLastError());
+
+  error = WSACleanup();
+  if (error==-1) handleSocketError( WSAGetLastError());
+  delete addr;
 }
-void ConnectServer(ConnectInfo* ci){
-  SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
-  SOCKADDR_IN addr = initFromConnectInfo(ci);
-  //bind(s,addr,sizeof(addr)); 受信側
-  sendCI(s, &addr, "111");
+int sendCI(const SOCKET s, const SOCKADDR_IN* addr, const char* str){
+  auto len = strlen( str );
+
+  error = sendto(s, str, len, 0, recast<const sockaddr*>( addr ),
+    sizeof( addr ));
+  if (error==-1) handleSocketError( WSAGetLastError());
+  return error;
 }
 
+int DebugLogger::GetError(){
+  handleSocketError( error );
+  return error;
+}
+int DebugLogger::Send(const char* str){
+  return sendCI( sock , addr , str);
+}
 DebugLogger::DebugLogger()
 {
   sockInit();
 }
 DebugLogger::~DebugLogger()
 {
-  sockExit();
+  sockExit(sock);
 }

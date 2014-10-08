@@ -3,15 +3,25 @@
 #include "PhysicSystem.h"
 #include "Renderer.h"
 #include "Assets.h"
+
 uint svgVLength;
 Renderer* rend;
 //焼けてる感じを出す
-//ソケット通じてデバッガを作る
+  //フィルターフラグでやればあるいは？しかし命中とらないことに変わりはない
+  //気体に近いパラメータを与え、風は見えないパーティクルを出すことで表現
+//ソケット通じてデバッガを作る＞ほぼ終了
 //ステージクリア時にアニメを止める
-//glRectで簡易描画
+//glRectで簡易描画,シンプルドローどこに
 //蒸発してもその場にエフェクトとセンサーを作る
 //団扇のためにセンサーを作る
+  //センサーに接触判定が出ない、worldクエリしますか
 //stbで画像ロードエフェクト
+//どうしてもテクスチャデバッグができない
+  //assimp使う　レガシーなサンプルかなにかで
+  //別のデバッガ
+//ステージ2以降のための整備
+//リセット対応
+
 //type Game =
 //  let loop =
 //    let poss = enes | >Seq.map GetPos
@@ -275,6 +285,7 @@ void onRenderFrame(int time){
   //stepできるようになったので
   sys->Step();
   auto data = ens->Data;
+  //Debug
   //クリップ範囲から離れてしまう
   glTranslatef( posx + 30 , posy - 60 , 0.0f );
   glRotatef(180, 1, 0, 0);
@@ -437,6 +448,7 @@ void GameAlgolyzm::Step(){
     step();
   else{
     //結果画面表示
+    rend->SetStage(Stage1Clear);
     auto data = ens->Data;
     auto gain = [](PEnemy e){return e->GainPoints(); };
     auto ps = gain(data->at(0));  //Map(*data, gain);
