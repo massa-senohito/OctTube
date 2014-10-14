@@ -307,7 +307,9 @@ void Enemy::motion(){
     if( mov == TL ) mov = L; else mov = R;
   }
 }
-
+b2AABB& Enemy::GetActBox(){
+  return actBox;
+}
 bool 
   Enemy::IsAllMeatFired ()//ms=
   {

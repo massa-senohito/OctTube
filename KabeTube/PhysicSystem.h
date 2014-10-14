@@ -19,7 +19,9 @@ ref class PhysicSystem
   void makeOuterFence(f32,f32);
   void jointDraw();
 public:
+  void DebugDr();
   int GetStopping();
+  void DrawAABB(b2AABB&);
   World GetWorld();
   PhysicSystem(void);
   ~PhysicSystem();

@@ -104,6 +104,7 @@ ref class Enemy
   PEnemyData* tentData;
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz);
+  b2AABB& GetActBox();
   //void SetPoints(Points,int);
   void SetAssets(int kind);
   bool IsAllMeatFired();

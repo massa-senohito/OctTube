@@ -13,6 +13,8 @@ enum Stages
   Stage1,Stage1Clear,Length,
 };
 
+void setPoly(GLint refV);
+void setMask(GLint refV);
 class Renderer
 {
 public:

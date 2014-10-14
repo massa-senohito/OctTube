@@ -8,6 +8,8 @@ public:
   static bool RenderSimple;
   DebugDraw();
   ~DebugDraw();
+  void DrawAABB(const b2AABB& aabb,bool isSolid);
+
   void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
   void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
 	/// DebugDraw::Draw a circle.
@@ -40,6 +42,35 @@ void drawRect(const b2Vec2 centers, const b2ParticleColor colors){
     glTranslatef(vdec(center),0);
     glutSolidCube(0.1);
   glPopMatrix();
+}
+
+void DebugDraw::DrawAABB(const b2AABB& aabb, bool solid){
+  if (solid)glRectf(vdec(aabb.lowerBound), vdec(aabb.upperBound));
+  else{
+    auto& lx = aabb.lowerBound.x;
+    auto& ly = aabb.lowerBound.y;
+    auto& ux = aabb.upperBound.x;
+    auto& uy = aabb.upperBound.y;
+    float verts[] = { lx, uy, ux, uy, ux, ly, lx, ly };
+    GLuint elem[] = { 0, 1, 2, 3};
+    auto lloop = GL_LINE_LOOP;
+    if(1){
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(lx, uy);
+      glVertex2f(ux, uy);
+      glVertex2f(ux, ly);
+      glVertex2f(lx, ly);
+      glEnd();
+    }
+    else{
+     glEnableClientState(GL_VERTEX_ARRAY);
+     glVertexPointer(2, GL_FLOAT, 0, verts);
+     glDrawElements(lloop, 1, GL_UNSIGNED_INT, elem);
+     //glDrawArrays(lloop, 0, 4);
+    }
+
+
+  }
 }
 void DebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color){
   glBegin(GL_LINE_LOOP);

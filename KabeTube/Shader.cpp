@@ -107,7 +107,7 @@ void loadProg(const GLchar* file,GLuint id){
   //glLinkProgram(
 }
 //一つだけの場合
-Shader::Shader(string vs,string fs)
+Shader::Shader(cstring vs,cstring fs)
 {
   vsid=createVerShader();
   loadProg(vs,vsid);
@@ -192,7 +192,7 @@ void Shader::VaoRender(int anim){
   glDrawElements(GL_LINES, esize, GL_UNSIGNED_INT, 0);
 
 }
-void Shader::Attloc(string attname){
+void Shader::Attloc(cstring attname){
   GLuint l=glGetAttribLocation(pid,attname);
   enableVerAtt(l);
   //フラグメント値のZをとればデプスバッファが取れる
@@ -202,7 +202,7 @@ void Shader::Attloc(string attname){
   //
   //vertAttPointer(l,3,
 }
-void Shader::Uniform(string uni,float v){
+void Shader::Uniform(cstring uni,float v){
   auto uid=glGetUniformLocation(pid, uni);
   glUniform1f(uid, v);
   enableVerAtt(uid);

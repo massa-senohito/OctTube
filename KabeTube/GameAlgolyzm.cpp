@@ -275,18 +275,10 @@ float posx = 29; float posy = -18.5f;
 bool AllEnemyFired(){
   return false;
 }
-//float scalex = 0, scaley = -98.5;
-//timeは17ミリ秒ごとにカウント
-//void drawFish(
-void onRenderFrame(int time){
+void playerControl(int time){
+
   int movableF = 2;
   float power  = 18;
-  //if(c%50==0){makeParticle(pos);}
-  //stepできるようになったので
-  sys->Step();
-  auto data = ens->Data;
-  //Debug
-  //クリップ範囲から離れてしまう
   glTranslatef( posx + 30 , posy - 60 , 0.0f );
   glRotatef(180, 1, 0, 0);
   glBegin(GL_LINES);
@@ -340,6 +332,18 @@ void onRenderFrame(int time){
       posy -= 0.5f;
     }
   }
+}
+//float scalex = 0, scaley = -98.5;
+//timeは17ミリ秒ごとにカウント
+//void drawFish(
+void onRenderFrame(int time){
+  //if(c%50==0){makeParticle(pos);}
+  playerControl(time);
+  sys->Step();
+  auto& data = **ens->Data->begin();
+
+  sys->DrawAABB(data.GetActBox());
+
   glScalef(0.17f, 0.2f,1.f);
   glRotatef(180, 1, 0, 0);
   glTranslatef(-263.5f,-98.5f, 0);

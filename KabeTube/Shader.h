@@ -1,5 +1,5 @@
 #pragma once
-typedef const char* string; 
+typedef const char* cstring; 
 typedef unsigned int uint;
 #define ref /**/
 
@@ -17,14 +17,14 @@ ref class Shader
     uint eb;
     //map<string,atr>
 public:
-    Shader(string vs,string fs);
+    Shader(cstring vs,cstring fs);
     void SendVert(float* p, int size, GLuint* inds);
     ~Shader();
-    void Attloc(string);
+    void Attloc(cstring);
     void Use(bool);
     void Render(int anim);
     void VaoRender(int anim);
-    void Uniform(string uniName,float v);
+    void Uniform(cstring uniName,float v);
     //void Render
 };
 //‰ºè‚µ‚½‚çF#‚Å‘‚¢‚½ƒoƒCƒ“ƒh‚à‚Á‚Ä‚«‚½‚Ù‚¤‚ª‚¢‚¢‚©‚à

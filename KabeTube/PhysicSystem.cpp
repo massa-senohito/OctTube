@@ -91,6 +91,9 @@ void eachParticle(std::function<void(V2&)> f){
 //w->GetParticleFlagsBuffer()[i] |= b2_zombieParticle;
  
 DebugDraw* dd;
+void PhysicSystem::DrawAABB(b2AABB& aabb){
+  dd->DrawAABB(aabb, false);
+}
 MyContactFilter*   cfilter;
 MyContactListener* mlis;
 auto downGrav=-9.8f;
@@ -236,6 +239,10 @@ void PhysicSystem::jointDraw(){
     jl = jl->GetNext();
   }
 }
+void PhysicSystem::DebugDr()
+{
+  w->DrawDebugData();
+}
 void step(){
   //グループを作成すると増える、
   //std::cout << particleSys->GetParticleGroupCount() << std::endl;
@@ -260,20 +267,24 @@ void step(){
       //glRecti(-siz,-siz,siz,siz);
     }
     else{
-#define deb
-#ifndef deb
       //bod->GetFixtureList()->GetShape
-#endif
     }
     //かべの描画　まあ継承でDraw呼ぶのが妥当か
     //bod->GetFixtureList()
   }
-#ifdef deb
-  w->DrawDebugData();
-#else
 
-  eachParticle([](V2& v){dd->DrawCircle(v, 0.5, b2Color()); });
-#endif
+  eachParticle([](V2& v){
+    glBegin(GL_POINTS);
+    float y = -0.2f,x=0.4f;
+    auto p1 = v - V2(-x,  y);
+    auto p2 = v - V2( 0, -y);
+    auto p3 = v - V2( x,  y);
+    glVertex2f( vdec(p1) );
+    glVertex2f( vdec(p2) );
+    glVertex2f( vdec(p3) );
+    glEnd();
+    //dd->DrawCircle(v, 0.5, b2Color());
+  });
 
 
 }
