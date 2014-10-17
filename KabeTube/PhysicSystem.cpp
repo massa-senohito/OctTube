@@ -239,7 +239,7 @@ void PhysicSystem::jointDraw(){
     jl = jl->GetNext();
   }
 }
-void PhysicSystem::DebugDr()
+void PhysicSystem::DrawDebug()
 {
   w->DrawDebugData();
 }

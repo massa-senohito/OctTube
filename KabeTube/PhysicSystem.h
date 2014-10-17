@@ -19,7 +19,7 @@ ref class PhysicSystem
   void makeOuterFence(f32,f32);
   void jointDraw();
 public:
-  void DebugDr();
+  void DrawDebug();
   int GetStopping();
   void DrawAABB(b2AABB&);
   World GetWorld();
