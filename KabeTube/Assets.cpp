@@ -11,12 +11,22 @@ void AnimAsset::UpdateAnim(int flame){
   //if ( update ) ++count;
   shader->Render(flame);
 }
+cstring kind2String(EnemyKind ek){
+  switch (ek)
+  {
+  case EnemyKind::Squid:
+    return "squid";
+    break;
+  default:
+    break;
+  }
+}
 AnimAsset::AnimAsset(EnemyKind ek){
   //if (ek == Squid){ "squid"; }
-  auto vs = path + "\\squid.vs";
-  auto fs = path + "\\squid.fs";
+  auto vs = path + "squid.vs";
+  auto fs = path + "squid.fs";
   shader = (new Shader(vs.data(), fs.data()));
-  vertice = svgRead((path + "\\allFlame").data());
+  vertice = svgRead((path + kind2String(ek) ).data());
   vertLen = getSvgVLen();
   elem = new uint[vertLen];
   for (size_t i = 0; i < vertLen; i++)
@@ -155,14 +165,14 @@ void initialize(){
   isInit = true;
 }
 
-SoundAsset::SoundAsset(EnemyKind)
+SoundAsset::SoundAsset(EnemyKind ek)
 {
   if (!isInit)initialize();
   //ALuint* squidSources;
   bufs = new ALuint[2];
   alGenBuffers(2, bufs);
-  openAndClose(path + std::string("\\ido2.wav") , bufs[0]);
-  openAndClose(path + std::string("\\yake.wav") , bufs[1]);
+  openAndClose(path + kind2String(ek)+std::string("Ido.wav") , bufs[0]);
+  openAndClose(path + std::string("yake.wav") , bufs[1]);
   sources = new ALuint[2];
   alGenSources(2, sources);
   alSourcei(sources[0], AL_BUFFER, bufs[0]);

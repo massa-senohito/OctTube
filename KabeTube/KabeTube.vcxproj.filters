@@ -19,6 +19,9 @@
     <Filter Include="ヘッダー ファイル\Engine">
       <UniqueIdentifier>{860884bd-9b8b-4869-9395-61f5196cdc67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\todo">
+      <UniqueIdentifier>{ce8bf3d4-c781-4dd5-9dfb-1fb45d7059c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -30,19 +33,10 @@
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicSystem.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Obstacle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Assets.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugDraw.h">
-      <Filter>ヘッダー ファイル\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="GameAlgolyzm.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GUIUtil.h">
@@ -57,17 +51,26 @@
     <ClInclude Include="MyContactFilter.h">
       <Filter>ヘッダー ファイル\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>ヘッダー ファイル\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugLogger.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>ヘッダー ファイル\Engine</Filter>
     </ClInclude>
     <ClInclude Include="TextureTest.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>ヘッダー ファイル\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>ヘッダー ファイル\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugLogger.h">
+      <Filter>ヘッダー ファイル\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicSystem.h">
+      <Filter>ヘッダー ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameAlgolyzm.h">
+      <Filter>ヘッダー ファイル\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

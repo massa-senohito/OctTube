@@ -348,7 +348,10 @@ void onRenderFrame(int time){
   glRotatef(180, 1, 0, 0);
   glTranslatef(-263.5f,-98.5f, 0);
   glBegin(GL_LINES);
+#ifdef _DEBUG //todo デバッグ用の壁描画 
+#else
   renderVertice(Assets::wall, Assets::wallLen,0);
+#endif
   glEnd();
   glLoadIdentity();
 }
@@ -362,7 +365,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   auto path    = args[0];
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel+1);
-  path         += "assets";
+  path         += "assets\\";
   Path::setPass(path);
   //Assets::squid     = svgRead((path+"\\allFlameOld").data());
   //Assets::squidLen  = siz;
@@ -371,23 +374,23 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   //{
   //  Assets::squidElem[i] = i;
   //}
-  Assets::tako     = svgRead((path+"\\takoallFlame").data());
+  Assets::tako     = svgRead((path+"takoallFlame").data());
   Assets::takoLen  = svgVLength;
   Assets::takoElem = gcnew uint[svgVLength];
   for (size_t i = 0; i < svgVLength; i++)
   {
     Assets::takoElem[i] = i;
   }
-  Assets::wall = svgRead((path + "\\wallallflame").data());
+  Assets::wall = svgRead((path + "wallallflame").data());
   Assets::wallLen = svgVLength;
 
   int len = 0; //(args->Length);
   //glewInit呼ばないといけないので
   GLUT_INITs(len ,nullptr);
-  sys->MakeParticle(pos);
+  //sys->MakeParticle(pos);
   //char ** arg= strMap(args);//opentkだと？
   ///drawable,steppable作るべき
-  auto csv = path+"\\coe.csv";
+  auto csv = path+"coe.csv";
   fileRead(csv.data(),sys);
 
   rend=new Renderer([&](int count){
@@ -396,9 +399,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   }
   , [&](){delete this; }
   );
-  //char* c=toCp(ar[0]);
   //auto g=new GUIUtil();
-  //splitTest();
   //Trueになる
   //Console::WriteLine(arg[0]);
   //std::cout << (arg[0])<< std::endl;;

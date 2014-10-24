@@ -239,8 +239,6 @@ void display()
 {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  //glLoadIdentity();
-  //glMatrixMode‚ÍMODELVIEWs—ñ‚É‚µ‚Ä‚¢‚é
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   static float wid=320.0/6.0;
@@ -342,6 +340,11 @@ void SpecialKeyUp(int key,int,int){
   if(key==GLUT_KEY_CTRL_L) 
       Key::pushed[Key::A]=false;
 }
+#ifdef _DEBUG
+void renderVertice(Points ps,int len,int anim){
+  glRectf(5,5,5,5);
+}
+#else
 void renderVertice(Points ps,int len,int anim){
 #ifdef _MANAGED
   int pl=ps->Length;
@@ -364,6 +367,7 @@ void renderVertice(Points ps,int len,int anim){
     //glVertex2f( psi,psi1);
   }
 }
+#endif
 void idle(){
 }
 void cl(){
