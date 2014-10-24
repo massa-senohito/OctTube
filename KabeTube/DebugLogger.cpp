@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "DebugLogger.h"
-#include  <winsock2.h>
 #define recast reinterpret_cast
 void handleSocketError(int err){
   switch (err) {
@@ -37,13 +36,11 @@ struct ConnectInfo
 {
   const char* IPAdress;
 };
-SOCKET sock;
-SOCKADDR_IN* addr;
-WSADATA wsaData;
-WORD ver2 = MAKEWORD(2, 0);
-int error;
+
 //1024ポートを使用して
 void sockInit(){
+#ifdef _SOCKDEBUG
+  ver2= MAKEWORD(2, 0);
   error = WSAStartup ( ver2 , &wsaData );
   if ( error ){ WSACleanup(); }
   auto udp = IPPROTO_UDP;
@@ -53,10 +50,13 @@ void sockInit(){
   addr->sin_port   = ht;
   addr->sin_family = AF_INET;
   addr->sin_addr.S_un.S_addr = inet_addr("127.0.0.1");;
+#endif
   //error = bind( sock , recast<sockaddr*>( addr ), sizeof( addr ));
   //if (error==-1) handleSocketError( WSAGetLastError());
 }
-void sockExit(SOCKET s){
+void DebugLogger::sockExit(SOCKET s)
+{
+
   error = closesocket(s);
   if (error==-1) handleSocketError( WSAGetLastError());
 
@@ -65,12 +65,17 @@ void sockExit(SOCKET s){
   delete addr;
 }
 int sendCI(const SOCKET s, const SOCKADDR_IN* addr, const char* str){
+
+#ifdef _SOCKDEBUG
   auto len = strlen( str );
 
   error = sendto(s, str, len, 0, recast<const sockaddr*>( addr ),
     sizeof( addr ));
   if (error==-1) handleSocketError( WSAGetLastError());
   return error;
+#else
+  return 0;
+#endif
 }
 
 int DebugLogger::GetError(){
@@ -86,5 +91,7 @@ DebugLogger::DebugLogger()
 }
 DebugLogger::~DebugLogger()
 {
+#ifdef _SOCKDEBUG
   sockExit(sock);
+#endif
 }

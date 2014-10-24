@@ -297,6 +297,7 @@ void PhysicSystem::Step(){
 PhysicSystem::~PhysicSystem(){
 
   delFences();
+  std::cout << "フェンスを削除" << std::endl;
   SAFE_DELETE(obs);
   SAFE_DELETE(dd);
   SAFE_DELETE(cfilter);
@@ -305,6 +306,7 @@ PhysicSystem::~PhysicSystem(){
   w->DestroyParticleSystem(particleSys);
 
   particleSys=nullptr;
+  std::cout << "パーティクル削除" << std::endl;
   delete w;
   w = nullptr;
   //http://oshiro.bpe.es.osaka-u.ac.jp/people/staff/imura/computer/OpenGL/framebuffer_object/disp_content
