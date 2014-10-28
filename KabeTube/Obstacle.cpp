@@ -196,12 +196,20 @@ void Enemy::squidProfile(World w,V2 pos){
 
   auto mass  = body->GetMass();
 }
-Enemy::Enemy(World w,b2Vec2 pos,float32 size)
+Enemy::Enemy(World w,b2Vec2 pos,float32 size,EnemyKind ek)
 :Age(0), points(nullptr)
 {
-  //switch
-  //squid.csvでアセットと形状、トランスフォーム
-  squidProfile(w, pos);
+  switch (ek)
+  {
+  case Squid:
+    //squid.csvでアセットと形状、トランスフォーム
+    squidProfile(w, pos);
+    break;
+  case Dragon:
+    break;
+  default:
+    break;
+  }
 }
 void Enemy::Impulse(V2 v)
 {

@@ -10,9 +10,8 @@ void renderVertice(Points ps,int len,int);
 void drawLines(std::function<void(void)> f);
 enum Stages
 {
-  Stage1,Stage1Clear,Length,
+  Stage1,Stage1Clear,Stage2,Stage2Clear,Length,
 };
-
 void setPoly(GLint refV);
 void setMask(GLint refV);
 class Renderer
@@ -39,4 +38,6 @@ enum  Key{
   bool isUpPushed();
   bool isDownPushed();
   bool* GetPushed();
+  bool* getOneShotPushed();
+
 }

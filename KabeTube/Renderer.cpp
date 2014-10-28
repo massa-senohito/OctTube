@@ -10,6 +10,7 @@ namespace Key{
     return pushed;
   }
   int lastPushed[Key::Length];
+  bool oneShotPushed[Key::Length];
   bool isAPushed(){
       return pushed[Key::A];
   }
@@ -34,6 +35,8 @@ namespace Key{
   int timeOfRightPushed(){
       return lastPushed[Key::Right];
   }
+
+  bool* getOneShotPushed(){ return oneShotPushed; }
 }
 typedef float float32;
 typedef const char* string;
@@ -59,7 +62,7 @@ void setConsoleColorYellow(){
 #endif
 }
  //printf("\x1b[41m");//red
-void  setConsoleColorDef(){
+void setConsoleColorDef(){
 #ifdef _MANAGED
   System::Console::ResetColor();
 #else
@@ -71,6 +74,9 @@ void loopEnd(){
     //std::cout << radius //"loopEnd"
     //    << std::endl;
     //setConsoleColorDef();
+  Key::oneShotPushed[Key::A] = false;
+  Key::oneShotPushed[Key::Left] = false;
+  Key::oneShotPushed[Key::Right] = false;
 }
 bool isErr(const GLchar* mes,int line){
   GLenum er=glGetError();
@@ -306,23 +312,37 @@ void specialkey(int key,int x,int y){
 
   float32 del=0.01f;//todo GLCTest‚Æ“¯‚¶Žg—p‚É‚·‚é
   if(key==GLUT_KEY_UP){ //radius+=del;
+    if (Key::pushed[Key::Up]){ Key::oneShotPushed[Key::Up] = false; }
+    else{ Key::oneShotPushed[Key::Up] = true; }
     Key::pushed[Key::Up]=true;
     Key::lastPushed[Key::Up]=count;
   }
   if(key==GLUT_KEY_DOWN){
+    if (Key::pushed[Key::Down]){ Key::oneShotPushed[Key::Down] = false; }
+    else{ Key::oneShotPushed[Key::Down] = true; }
     Key::pushed[Key::Down]=true;
     Key::lastPushed[Key::Down]=count;
   }
   if(key==GLUT_KEY_LEFT){ //pradius+=del;
+    if (Key::pushed[Key::Left]){ Key::oneShotPushed[Key::Left] = false; }
+    else{ Key::oneShotPushed[Key::Left] = true; }
     Key::pushed[Key::Left]=true;
     Key::lastPushed[Key::Left]=count;
   }
   if(key==GLUT_KEY_RIGHT){ //pradius-=del;
+    if (Key::pushed[Key::Right]){ Key::oneShotPushed[Key::Right] = false; }
+    else{ Key::oneShotPushed[Key::Right] = true; }
     Key::pushed[Key::Right]=true;
     Key::lastPushed[Key::Right]=count;
   }
   if(key==GLUT_KEY_ALT_L) glutExit();
   if(key==GLUT_KEY_CTRL_L){ 
+    auto one=&Key::oneShotPushed[Key::A];
+
+    if (Key::pushed[Key::A])
+      { *one = false; }
+    else
+      { *one = true ; }
     Key::pushed[Key::A]=true;
     Key::lastPushed[Key::A]=count;
   }
@@ -337,10 +357,12 @@ void SpecialKeyUp(int key,int,int){
       Key::pushed[Key::Left]=false;
   if(key==GLUT_KEY_RIGHT) //pradius-=del;
       Key::pushed[Key::Right]=false;
-  if(key==GLUT_KEY_CTRL_L) 
-      Key::pushed[Key::A]=false;
+  if (key == GLUT_KEY_CTRL_L) {
+    Key::pushed[Key::A] = false;
+    Key::oneShotPushed[Key::A] = false;
+  }
 }
-#ifdef _DEBUG
+#ifdef DEBUG
 void renderVertice(Points ps,int len,int anim){
   glRectf(5,5,5,5);
 }

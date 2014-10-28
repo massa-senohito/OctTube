@@ -17,7 +17,11 @@ cstring kind2String(EnemyKind ek){
   case EnemyKind::Squid:
     return "squid";
     break;
+  case EnemyKind::Dragon:
+    return "";
+    break;
   default:
+    return "none";
     break;
   }
 }
@@ -46,6 +50,8 @@ void AnimAsset::NoUse(){
 }
 AnimAsset::~AnimAsset(){
   SAFE_DELETE( shader);
+  DA( vertice);
+  DA( elem);
 }
 
 //http://www-fps.nifs.ac.jp/ito/memo/openal02.html

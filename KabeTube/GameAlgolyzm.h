@@ -12,6 +12,7 @@ typedef List<Enemy^>^ Enes;
 #include "Obstacle.h"
 #include "PhysicSystem.h"
 
+enum Stages;
 typedef Enemy* PEnemy;
 typedef DotnetList<Enemy*>    Enes;
 typedef DotnetList<Enemy*>*   PEnes;
@@ -72,14 +73,17 @@ float bej(float t);
 class GameAlgolyzm
 {
   PhysicSystem* sys;
+  Stages stage;
   PEnemy addEnemy(f32,f32,f32 rad);
   bool AllEnemyFired();
   PTyphoon Blow(V2 pos,V2 dir,f32 rad);
   void makeDragon(stringArray coes);
   void fileRead(String filename, PPhysicSystem sys);
+  void PrintResult();
 public:
   GameAlgolyzm(stringArray arg);
   void Step();
+  void SetStage(Stages);
   void Render();
   ~GameAlgolyzm(void);
 };

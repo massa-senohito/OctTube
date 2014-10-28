@@ -3,7 +3,7 @@
 #include "PhysicSystem.h"
 #include "Renderer.h"
 #include "Assets.h"
-
+#define scast static_cast
 uint svgVLength;
 Renderer* rend;
 //焼けてる感じを出す
@@ -32,12 +32,16 @@ Renderer* rend;
 //    setBackScreen
 //    enes|>iter(fun e->e.NoAnim)
 //    pla |>iter(fun p->p.Nodeath;p.Smoke|>)
+//    state=printResult
+//  
 //  let OnBubbleHit pos
 //    effect
 //    createBlowOut pos
 //  let
 //    let edata=recast(fix->udata)
 //    edata->DamagedYou(bubble)
+//    match state with
+//      |Stage1Clear->if oneShot
 uint getSvgVLen(){
   return svgVLength;
 }
@@ -149,7 +153,7 @@ std::vector<std::string> Split(std::string str, char delim){
   return res;
 }
 float strTofloat(std::string str){
-    return Convert::ToSingle(str.c_str());
+    return scast<float>(Convert::ToSingle(str.c_str()));
 }
 void GameAlgolyzm::makeDragon(stringArray coes )
 {
@@ -217,7 +221,8 @@ Points svgRead(String name){
   }
 
 #endif
-
+  
+  std::cout << name << " can't read" << std::endl;
   int c=1;//ps->Length;
   for (int i = 0; i < c; i++)
   {
@@ -276,7 +281,7 @@ bool AllEnemyFired(){
   return false;
 }
 void playerControl(int time){
-
+  //
   int movableF = 2;
   float power  = 18;
   glTranslatef( posx + 30 , posy - 60 , 0.0f );
@@ -294,7 +299,7 @@ void playerControl(int time){
   //吹き飛ばせるように
   //drawClothHair(angle);
   glLoadIdentity();
-  bool p[Key::Length] = { Key::GetPushed() };
+  
   //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
     if(time-lastFiredFrame>10 && !AllEnemyFired()){
@@ -356,7 +361,7 @@ void onRenderFrame(int time){
   glLoadIdentity();
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
-  :sys(gcnew PhysicSystem)
+:sys(gcnew PhysicSystem), stage(Stages::Stage1)
   //:ens(gcnew Enes),
   //tys(gcnew Tys)
 {
@@ -367,13 +372,6 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   path         = path.substr(0,lastBel+1);
   path         += "assets\\";
   Path::setPass(path);
-  //Assets::squid     = svgRead((path+"\\allFlameOld").data());
-  //Assets::squidLen  = siz;
-  //Assets::squidElem = gcnew uint[siz];
-  //for (size_t i = 0; i < siz; i++)
-  //{
-  //  Assets::squidElem[i] = i;
-  //}
   Assets::tako     = svgRead((path+"takoallFlame").data());
   Assets::takoLen  = svgVLength;
   Assets::takoElem = gcnew uint[svgVLength];
@@ -381,7 +379,8 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   {
     Assets::takoElem[i] = i;
   }
-  Assets::wall = svgRead((path + "wallallflame").data());
+  //todo ステージ情報、壁をAssets内にもっていって、適宜disposeできるように
+  Assets::wall    = svgRead((path + "wallallflame").data());
   Assets::wallLen = svgVLength;
 
   int len = 0; //(args->Length);
@@ -407,7 +406,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   glutMainLoop();
 }
 ///クリア評価
-float howAllMeatFired()// ms
+float howAllMeatFired()
 {
   return 1;
 }
@@ -427,7 +426,7 @@ Typhoon* GameAlgolyzm::Blow(V2 p, V2 dir, float rad){
   return typ;
 }
 PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad){
-  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad);
+  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad,EnemyKind::Squid);
   ens->Add(e);
   //auto em=enemyLiving->emplace(e,true);
   //em.first
@@ -435,6 +434,34 @@ PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad){
 }
 std::string tos(int i){ return std::to_string(i)+'\n'; }
 std::string leg(int i){ return "leg"+tos(i)+": "; }
+Stages onClearStage(Stages s){
+  if (s%2)
+  {
+    return s;
+  }
+  //%2で割り切れたらボタン入力待ち
+  else{
+    //ctrlがoneshotしたら次のステージへ
+    if (Key::getOneShotPushed()[Key::A]){
+      return scast<Stages>(s+1);
+    }
+    else{
+      return s;
+
+    }
+  }
+}
+void GameAlgolyzm::PrintResult(){
+      auto data = ens->Data;
+      auto gain = [](PEnemy e){return e->GainPoints(); };
+      auto ps = gain(data->at(0));  //Map(*data, gain);
+      glRasterPos2f(10, 10);
+      auto clrstr = std::string("squid: ") + tos(ps[0])
+        + leg(0) + tos(ps[1]) + leg(1) + tos(ps[2]) + leg(2) + tos(ps[3]);
+      if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
+      glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
+        reinterpret_cast<const unsigned char*>(clrstr.data()));
+}
 void GameAlgolyzm::Step(){
 
 #ifdef _MANAGED
@@ -446,23 +473,21 @@ void GameAlgolyzm::Step(){
   }
 #else
   auto stopping = sys->GetStopping();
-  auto data = ens->Data;
-  std::for_each(data->begin(), data->end(), [&stopping](PEnemy i){i->Update(stopping==0); });
+  auto data     = ens->Data;
+  std::for_each(data->begin(), data->end(), 
+    [&stopping](PEnemy i){ i->Update( stopping == 0) ; });
 #endif
   if( !AllEnemyFired())
     step();
   else{
-    //結果画面表示
-    rend->SetStage(Stage1Clear);
-    auto data = ens->Data;
-    auto gain = [](PEnemy e){return e->GainPoints(); };
-    auto ps = gain(data->at(0));  //Map(*data, gain);
-    glRasterPos2f(10, 10);
-    auto clrstr = std::string("squid: ") + tos(ps[0])
-      +leg(0)+ tos(ps[1]) + leg(1)+tos(ps[2]) + leg(2)+tos(ps[3]);
-    if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
-    glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
-      reinterpret_cast<const unsigned char*>(clrstr.data()));
+    //結果画面表示,自分自身もsetstageして、ボタン入力待ちに
+    //if (Key::getOneShotPushed()[Key::A])
+    {
+      //1度だけ
+      stage = onClearStage(stage);
+      rend->SetStage(stage);
+      PrintResult();
+    }
   }
   //jointDraw();
 }

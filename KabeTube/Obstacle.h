@@ -103,7 +103,7 @@ ref class Enemy
   Body* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
 public:
-  Enemy(b2World* w,b2Vec2 pos,float32 siz);
+  Enemy(b2World* w,b2Vec2 pos,float32 siz,EnemyKind);
   b2AABB& GetActBox();
   //void SetPoints(Points,int);
   void SetAssets(int kind);
