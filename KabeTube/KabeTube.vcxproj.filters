@@ -22,6 +22,9 @@
     <Filter Include="ヘッダー ファイル\todo">
       <UniqueIdentifier>{ce8bf3d4-c781-4dd5-9dfb-1fb45d7059c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\GameLogic">
+      <UniqueIdentifier>{5fcbcc9c-3a8e-4801-a19e-0df61fa9c3f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -72,6 +75,9 @@
     <ClInclude Include="GameAlgolyzm.h">
       <Filter>ヘッダー ファイル\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="StageManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
@@ -80,9 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameAlgolyzm.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="MyContactFilter.cpp">
@@ -106,20 +109,26 @@
     <ClCompile Include="GUIUtil.cpp">
       <Filter>ソース ファイル\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Obstacle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="OctTube.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Assets.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DebugLogger.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="TextureTest.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameAlgolyzm.cpp">
+      <Filter>ソース ファイル\GameLogic</Filter>
+    </ClCompile>
+    <ClCompile Include="Obstacle.cpp">
+      <Filter>ソース ファイル\GameLogic</Filter>
+    </ClCompile>
+    <ClCompile Include="OctTube.cpp">
+      <Filter>ソース ファイル\GameLogic</Filter>
+    </ClCompile>
+    <ClCompile Include="StageManager.cpp">
+      <Filter>ソース ファイル\GameLogic</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets.cpp">
+      <Filter>ソース ファイル\GameLogic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

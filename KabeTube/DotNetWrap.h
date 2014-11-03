@@ -18,6 +18,9 @@ public:
   //TSI Last();
   void Clear();
   int Count;
+
+  int Accumlate(std::function<int(int,T)>);
+  void ForEach(std::function<void(T)>);
   T operator[](int i);
 };
 
@@ -29,6 +32,28 @@ DotnetList<T>::DotnetList() :Count(0)
 template<typename T>
 T Add(T x, T y){
   return x + y;
+}
+template<typename T>
+int DotnetList<T>::Accumlate(std::function<int(int,T)> f)
+  
+{
+  typedef decltype(*Data->begin()) IT;
+  int init = int();
+  auto first = Data->begin();
+  for (; first != Data->end(); ++first){
+    init = f(init, *first);
+  }
+  return init;
+}
+template<typename T>
+void DotnetList<T>::ForEach(std::function<void(T)> f)
+  
+{
+  typedef decltype(*Data->begin()) IT;
+  auto first = Data->begin();
+  for (; first != Data->end(); ++first){
+    f(*first);
+  }
 }
 
 template<typename T,typename RT>
@@ -42,6 +67,7 @@ template<typename T,typename RT>
 auto Map(std::vector<T>& data, std::function<RT(T)> mf)->std::vector<RT>{
   return std::transform(data.begin(), data.end(), mf);
 }
+
 template<typename T>
 DotnetList<T>::~DotnetList(){
   Data->clear();
@@ -56,6 +82,7 @@ void DotnetList<T>::Add(T item){
 template<typename T>
 void DotnetList<T>::Clear(){
   Data->clear();
+  Count = 0;
 }
 //template<typename T>
 //TSI

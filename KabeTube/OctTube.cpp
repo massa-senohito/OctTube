@@ -1,5 +1,7 @@
 // KabeTube.cpp : メイン プロジェクト ファイルです。
-
+#ifdef _DEBUG
+#undef _DEBUG
+#endif
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"

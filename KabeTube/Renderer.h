@@ -27,7 +27,7 @@ public:
 //https://github.com/assimp/assimp/blob/master/samples/SimpleOpenGL/Sample_SimpleOpenGL.c
 namespace Key{
 enum  Key{
-  Up,Down,Left,Right,A,Length
+  Up,Down,Left,Right,A,D,Length
 };
   int timeOfAPushed();
   int timeOfLeftPushed();
@@ -39,5 +39,5 @@ enum  Key{
   bool isDownPushed();
   bool* GetPushed();
   bool* getOneShotPushed();
-
+  bool isDPushed();
 }

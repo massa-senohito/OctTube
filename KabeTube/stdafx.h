@@ -11,6 +11,7 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include <numeric>
 #include <functional>
 #include <iostream>
 //#include "

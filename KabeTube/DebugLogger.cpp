@@ -86,12 +86,28 @@ int DebugLogger::Send(const char* str){
   return sendCI( sock , addr , str);
 }
 DebugLogger::DebugLogger()
+:log(*(new LogData))
 {
   sockInit();
+}
+void DebugLogger::MessagePush(cstring key, cstring value)
+{
+  log[key] = value;
+}
+int DebugLogger::ReadPushed(std::function<void(LogContain&)> f)
+{
+  
+  auto first = log.begin();
+  for (; first != log.end(); ++first){
+    f((*first));
+  }
+  return log.size();
 }
 DebugLogger::~DebugLogger()
 {
 #ifdef _SOCKDEBUG
   sockExit(sock);
 #endif
+  log.clear();
+  delete &log;
 }

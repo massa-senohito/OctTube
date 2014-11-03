@@ -70,14 +70,32 @@ namespace Assets{
 Points svgRead(String);
 uint getSvgVLen();
 float bej(float t);
+struct ClearStatus{
+  bool IsWellBurned;
+  int Score;
+  ClearStatus(bool well, int score){
+    Score = score;
+    IsWellBurned = well;
+  }
+};
+typedef DotnetList<ClearStatus*>& ClearStatusList;
 class GameAlgolyzm
 {
+  ClearStatusList clearStatus;
   PhysicSystem* sys;
-  Stages stage;
-  PEnemy addEnemy(f32,f32,f32 rad);
+  ClearStatus* HowAllMeatFired(int*);
+  char* message;
+  PEnemy addEnemy(f32,f32,f32 rad,EnemyKind);
   bool AllEnemyFired();
   PTyphoon Blow(V2 pos,V2 dir,f32 rad);
-  void makeDragon(stringArray coes);
+
+  //StageManager‚ÉˆÚ“®‚³‚¹‚é—\’è‚Ì‚à‚Ì
+  Stages onClearStage(Stages s);
+  Stages stage;
+  std::string& currentStagePath;
+  bool isClear;
+  void makeMonster(stringArray coes);
+  //void makeMonster(stringArray coes);
   void fileRead(String filename, PPhysicSystem sys);
   void PrintResult();
 public:

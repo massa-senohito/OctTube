@@ -155,7 +155,7 @@ std::vector<std::string> Split(std::string str, char delim){
 float strTofloat(std::string str){
     return scast<float>(Convert::ToSingle(str.c_str()));
 }
-void GameAlgolyzm::makeDragon(stringArray coes )
+void GameAlgolyzm::makeMonster(stringArray coes )
 {
   //縦に動く,x10y12に初期値から加速度20で移動,（こげやすさ
   auto name = coes[0];
@@ -166,9 +166,13 @@ void GameAlgolyzm::makeDragon(stringArray coes )
     
   }
   //-16,11でとばす
-  auto enemy = addEnemy(-32,0,1);
+  auto enemy = 
+    name == "squid"      ? addEnemy(-32,0,1,EnemyKind::Squid) :
+    name == "dragonbody" ? addEnemy(-32,0,1,EnemyKind::Squid) :
+                           addEnemy(-32,0,1,EnemyKind::Squid);
   
   enemy->Impulse(V2(6,11));
+
   auto ps = Assets::getSquidPoints();
   enemy->SetAssets(Squid); //
   //enemy->SetPoints(ps,Assets::squidPLen());
@@ -255,20 +259,21 @@ void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
      auto sz= strTofloat(coefar[6]);
      //fence(x,y,z,sx,sy,sz,0.0f);
      sys->addFence(x,y,sx,sy);
-   }
-   if(name=="dragonbody"){
-     makeDragon(coefar);
+     continue;
    }
    if(name=="blow"){
-     auto x = strTofloat(coefar[1]);
-     auto y = strTofloat(coefar[2]);
+     auto x  = strTofloat(coefar[1]);
+     auto y  = strTofloat(coefar[2]);
      auto dx = strTofloat(coefar[3]);
-     auto dy= strTofloat(coefar[4]);
+     auto dy = strTofloat(coefar[4]);
      auto rad= strTofloat(coefar[5]);
      Blow(
        V2(x, y), V2(dx,dy), rad
      );
+     continue;
    }
+   //全部違うなら
+   makeMonster(coefar);
   }
 }
 
@@ -277,9 +282,6 @@ int lastFiredFrame=int(0);
 float angle=float(90);
 #define pos 0.5f,0.4f
 float posx = 29; float posy = -18.5f;
-bool AllEnemyFired(){
-  return false;
-}
 void playerControl(int time){
   //
   int movableF = 2;
@@ -302,7 +304,9 @@ void playerControl(int time){
   
   //std::cout << angle << std::endl;
   if(Key::isAPushed()){//フレームじゃなくてタイマー
-    if(time-lastFiredFrame>10 && !AllEnemyFired()){
+    if(time-lastFiredFrame>10 
+      //&& !AllEnemyFired()
+      ){
       float vx=cos(toRad(angle));
       float vy=sin(toRad(angle));
       makeSinglePar
@@ -337,6 +341,10 @@ void playerControl(int time){
       posy -= 0.5f;
     }
   }
+  //ここからはデバッグ用
+  if (Key::isDPushed()){
+    ens->ForEach([](PEnemy e){e->SetHp(1); });
+  }
 }
 //float scalex = 0, scaley = -98.5;
 //timeは17ミリ秒ごとにカウント
@@ -345,15 +353,19 @@ void onRenderFrame(int time){
   //if(c%50==0){makeParticle(pos);}
   playerControl(time);
   sys->Step();
-  auto& data = **ens->Data->begin();
-
-  sys->DrawAABB(data.GetActBox());
-
+#ifdef _DEBUG //todo デバッグ用の壁描画 
+  if (ens->Count != 0){
+    auto& data = **ens->Data->begin();
+    //AIの行動範囲
+    sys->DrawAABB(data.GetActBox());
+  }
+#endif
   glScalef(0.17f, 0.2f,1.f);
   glRotatef(180, 1, 0, 0);
   glTranslatef(-263.5f,-98.5f, 0);
   glBegin(GL_LINES);
 #ifdef _DEBUG //todo デバッグ用の壁描画 
+  renderVertice(Assets::wall, Assets::wallLen,0);
 #else
   renderVertice(Assets::wall, Assets::wallLen,0);
 #endif
@@ -361,7 +373,12 @@ void onRenderFrame(int time){
   glLoadIdentity();
 }
 GameAlgolyzm::GameAlgolyzm(stringArray args)
-:sys(gcnew PhysicSystem), stage(Stages::Stage1)
+:sys(gcnew PhysicSystem)
+ , stage(Stages::Stage1)
+ , isClear(0)
+ , clearStatus(*(gcnew DotnetList< ClearStatus*>()))
+ , message(new char[128])
+ , currentStagePath(*(new std::string()))
   //:ens(gcnew Enes),
   //tys(gcnew Tys)
 {
@@ -371,6 +388,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel+1);
   path         += "assets\\";
+  currentStagePath = path;
   Path::setPass(path);
   Assets::tako     = svgRead((path+"takoallFlame").data());
   Assets::takoLen  = svgVLength;
@@ -389,9 +407,8 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   //sys->MakeParticle(pos);
   //char ** arg= strMap(args);//opentkだと？
   ///drawable,steppable作るべき
-  auto csv = path+"coe.csv";
-  fileRead(csv.data(),sys);
 
+  this->SetStage(stage);
   rend=new Renderer([&](int count){
     onRenderFrame(count);
     Step();
@@ -405,13 +422,28 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
   rend->renderPolygon(nullptr,0);
   glutMainLoop();
 }
+std::string tos(int i){ return std::to_string(i)+'\n'; }
+std::string leg(int i){ return "leg"+tos(i)+": "; }
 ///クリア評価
-float howAllMeatFired()
+ClearStatus* GameAlgolyzm::HowAllMeatFired(int* ps)
 {
-  return 1;
+  if (stage == Stage1)
+  {
+    auto asiPoint = ps[1] + ps[2] + ps[3];
+    auto clrstr = std::string("squid: ") + tos(ps[0])
+      + leg(0) + tos(ps[1])
+      + leg(1) + tos(ps[2])
+      + leg(2) + tos(ps[3]);
+    if (asiPoint>20){ clrstr += "\ntastes good."; }
+    strcpy(( message), clrstr.data());
+    return (new ClearStatus( asiPoint > 20, asiPoint + ps[0]));
+  }
+  return(new ClearStatus(false, 0));
+  //return 1;
 }
 
 bool GameAlgolyzm::AllEnemyFired(){
+  if (isClear)return true;
   auto count = ens->Count;
   auto& e = (*ens);
   for (int i = 0; i < count; i++)
@@ -425,45 +457,42 @@ Typhoon* GameAlgolyzm::Blow(V2 p, V2 dir, float rad){
   tys->Add(typ);
   return typ;
 }
-PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad){
-  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad,EnemyKind::Squid);
+PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad,EnemyKind ek){
+  //onClearStageはシーン的なもの、これは
+  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad,ek);
   ens->Add(e);
-  //auto em=enemyLiving->emplace(e,true);
-  //em.first
   return e;
 }
-std::string tos(int i){ return std::to_string(i)+'\n'; }
-std::string leg(int i){ return "leg"+tos(i)+": "; }
-Stages onClearStage(Stages s){
+void GameAlgolyzm::SetStage(Stages s){
+  auto si=scast<int>(s);
+  auto& csv = currentStagePath + "coe" + ".csv";
+  
+  fileRead(csv.data(),sys);
+}
+Stages GameAlgolyzm::onClearStage(Stages s)
+{
+  auto data = ens->Data;
+  auto sc=ens->Accumlate([](int acc, PEnemy e){return acc + 2; });
+  auto ps = (data->at(0)->GetScore());  //Map(*data, gain);
+  clearStatus.Add(HowAllMeatFired(ps));
   if (s%2)
   {
     return s;
   }
   //%2で割り切れたらボタン入力待ち
   else{
-    //ctrlがoneshotしたら次のステージへ
-    if (Key::getOneShotPushed()[Key::A]){
-      return scast<Stages>(s+1);
-    }
-    else{
-      return s;
-
-    }
+    return s;
   }
 }
 void GameAlgolyzm::PrintResult(){
-      auto data = ens->Data;
-      auto gain = [](PEnemy e){return e->GainPoints(); };
-      auto ps = gain(data->at(0));  //Map(*data, gain);
-      glRasterPos2f(10, 10);
-      auto clrstr = std::string("squid: ") + tos(ps[0])
-        + leg(0) + tos(ps[1]) + leg(1) + tos(ps[2]) + leg(2) + tos(ps[3]);
-      if (ps[1] + ps[2] + ps[3] > 20){ clrstr += "\ntastes good."; }
-      glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
-        reinterpret_cast<const unsigned char*>(clrstr.data()));
+  glRasterPos2f(10, 10);
+  glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
+    reinterpret_cast<const unsigned char*>(message));
 }
 void GameAlgolyzm::Step(){
 
+  auto stopping = sys->GetStopping();
+  if (!AllEnemyFired()){
 #ifdef _MANAGED
   for each (PEnemy var in ens)
   {
@@ -472,22 +501,31 @@ void GameAlgolyzm::Step(){
     //if(var)
   }
 #else
-  auto stopping = sys->GetStopping();
-  auto data     = ens->Data;
-  std::for_each(data->begin(), data->end(), 
-    [&stopping](PEnemy i){ i->Update( stopping == 0) ; });
-#endif
-  if( !AllEnemyFired())
+    auto data = ens->Data;
+    std::for_each(data->begin(), data->end(),
+      [&stopping](PEnemy i){ i->Update(stopping == 0); });
     step();
+#endif
+  }
   else{
     //結果画面表示,自分自身もsetstageして、ボタン入力待ちに
     //if (Key::getOneShotPushed()[Key::A])
+    if (!isClear)
     {
-      //1度だけ
-      stage = onClearStage(stage);
+      //クリア後1度だけ
+      stage = onClearStage(scast<Stages>(stage+1));
       rend->SetStage(stage);
-      PrintResult();
+      ens->Clear();
+      isClear = true;
     }
+    else{
+      //ctrlがoneshotしたら次のステージへ
+      if (Key::getOneShotPushed()[Key::A]){
+        SetStage(scast<Stages>(stage+1));
+        isClear = false;
+      }
+    }
+    PrintResult();
   }
   //jointDraw();
 }
@@ -504,10 +542,13 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
+  //delete時にclear走ってるので
   SAFE_DELETE(ens);
   SAFE_DELETE(tys);
-
+  clearStatus.Clear();
+  delete(&(clearStatus));
   SAFE_DELETE(rend);
+  SAFE_DELETE(message);
   DA ( Assets::squid);
   DA ( Assets::squidElem);
   DA ( Assets::tako);

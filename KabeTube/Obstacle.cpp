@@ -7,7 +7,6 @@ void playSquidDamageSound()
 {
   squidAsset->PlayDamageSound();
 }
-AnimAsset* animAsset;
 
 const auto renderWid = 320.0f / 6.f;
 const auto renderHei = 240.0f / 6.f;
@@ -83,10 +82,12 @@ CircleSensor::~CircleSensor(){
 }
 //‚‘¬‰»‚·‚é‚È‚çsize‚ÍV2‚É‚µ‚È‚¢‚Å‚¨‚­
 Obstacle::Obstacle(World w,b2Vec2 pos,b2Vec2 size)
-  :x(0),y(0),xx(0),yy(0),inverceMove(false),movable(false),inverceCount(0)
+  :x(0),y(0),xx(0),yy(0),
+  inverceMove(false),movable(false),
+  inverceCount(0)
 {
   def=new b2BodyDef();
-  s=new b2PolygonShape;
+  s  =new b2PolygonShape;
   s  ->SetAsBox(size.x/2,size.y/2);
   def->position = pos;
   def->userData = nullptr;
@@ -165,8 +166,6 @@ Body* Enemy::sqTentacle(V2 parentPos){
   return bods;
 }
 void Enemy::squidProfile(World w,V2 pos){
-  squidAsset =( new SoundAsset(Squid));
-  animAsset  =  new AnimAsset (Squid) ;
   actBox            = b2AABB();
   actBox.upperBound = V2(renderWid-10,renderHei);
   actBox.lowerBound = V2(-renderWid+10,-renderHei);
@@ -196,8 +195,8 @@ void Enemy::squidProfile(World w,V2 pos){
 
   auto mass  = body->GetMass();
 }
-Enemy::Enemy(World w,b2Vec2 pos,float32 size,EnemyKind ek)
-:Age(0), points(nullptr)
+Enemy::Enemy(World w, b2Vec2 pos, float32 size, EnemyKind ek)
+:Age(0), points(nullptr), hp(100)
 {
   switch (ek)
   {
@@ -210,6 +209,7 @@ Enemy::Enemy(World w,b2Vec2 pos,float32 size,EnemyKind ek)
   default:
     break;
   }
+  SetProfile(ek);
 }
 void Enemy::Impulse(V2 v)
 {
@@ -227,13 +227,19 @@ void Enemy::Veloc(V2 v){
 //  pointsLength=len;
   //Asset‚ªelem 
 //}
-int* Enemy::GainPoints(){
+int* Enemy::GetScore(){
   return new int[]{ *e->Damage ,*tentData[0]->Damage,*tentData[1]->Damage,*tentData[2]->Damage};
 }
 void Enemy::SetAssets(int kind){
   auto kin = static_cast<EnemyKind>(kind);
-  anim = new AnimAsset(kin);
-  sound = new SoundAsset(kin);
+  anim     = new AnimAsset(kin);
+}
+void Enemy::SetProfile(EnemyKind kin)
+{
+  //auto kin  = static_cast<EnemyKind>(kind);
+  anim      = new AnimAsset(kin);
+  squidAsset = new SoundAsset(kin);
+
 }
 enum Moving{
   R,
@@ -321,14 +327,20 @@ b2AABB& Enemy::GetActBox(){
 bool 
   Enemy::IsAllMeatFired ()//ms=
   {
+    //0‚È‚ç•sŽ€
+    if (hp == 0){ return false; }
     int length=0;//
-    auto dam =* e->Damage;
+    auto dam = *e->Damage;
     for (int i = 0; i < tentacleCount; i++)
     {
       dam = dam + *tentData[i]->Damage;
     }
-    auto defeated=dam>100;
+    auto defeated=dam>hp;
     return defeated;
+}
+
+void Enemy::SetHp(int hp){
+  this->hp=hp;
 }
 void Enemy::Update(bool move){
   Age++;
@@ -367,7 +379,21 @@ Body Enemy::GetBody(){
   return body;
 }
 //EnemyData
+void Enemy::UnLoad()
+{
+  if (selfDelete){
+
+    delete s;
+    delete &squidAsset;
+    delete anim;
+    delete def;
+  }
+  else{
+
+  }
+}
 Enemy::~Enemy(){
+  selfDelete = true;
   auto w=body->GetWorld();
   for (auto j=w->GetJointList(); j!=nullptr; j=j->GetNext())
   {
@@ -375,9 +401,7 @@ Enemy::~Enemy(){
   }
   delete e->Damage;
   w->DestroyBody(body);
-  delete s;
-  delete &squidAsset;
+  UnLoad();
   delete e;
-  delete def;
   delete[] tentData;
 }

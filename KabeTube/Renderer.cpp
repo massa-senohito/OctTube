@@ -14,6 +14,7 @@ namespace Key{
   bool isAPushed(){
       return pushed[Key::A];
   }
+  bool isDPushed(){ return pushed[Key::D]; }
   bool isLeftPushed(){
       return pushed[Key::Left];
   }
@@ -77,6 +78,7 @@ void loopEnd(){
   Key::oneShotPushed[Key::A] = false;
   Key::oneShotPushed[Key::Left] = false;
   Key::oneShotPushed[Key::Right] = false;
+  Key::oneShotPushed[Key::D] = false;
 }
 bool isErr(const GLchar* mes,int line){
   GLenum er=glGetError();
@@ -308,6 +310,17 @@ void onDrag(int x,int y){
   //ry=180.0/480.0*y-90.0;
 
 }
+void oneShotUpdate(int k){
+  auto one=&Key::oneShotPushed[k];
+
+  if (Key::pushed[k])
+    { *one = false; }
+  else
+    { *one = true ; }
+  Key::pushed[k]=true;
+  Key::lastPushed[k] = count;
+
+}
 void specialkey(int key,int x,int y){
 
   float32 del=0.01f;//todo GLCTestと同じ使用にする
@@ -335,7 +348,9 @@ void specialkey(int key,int x,int y){
     Key::pushed[Key::Right]=true;
     Key::lastPushed[Key::Right]=count;
   }
-  if(key==GLUT_KEY_ALT_L) glutExit();
+  if (key == GLUT_KEY_ALT_L) {
+    oneShotUpdate(Key::D);
+  }
   if(key==GLUT_KEY_CTRL_L){ 
     auto one=&Key::oneShotPushed[Key::A];
 
@@ -360,6 +375,9 @@ void SpecialKeyUp(int key,int,int){
   if (key == GLUT_KEY_CTRL_L) {
     Key::pushed[Key::A] = false;
     Key::oneShotPushed[Key::A] = false;
+  }
+  if (key == GLUT_KEY_ALT_L) {
+    Key::pushed[Key::D]=false;
   }
 }
 #ifdef DEBUG
@@ -1794,15 +1812,22 @@ GLenum Renderer::renderPolygon(GLvoid* vert,int length){
   //http://www57.atwiki.jp/gametips/m/pages/29.html?guid=on attrivpointerの話
   return glGetError();
 }
-
+//上のほう下のほうの順
 auto stagecolor = new float*[]{
     new float[]{ 0.9f, 0.9f, 1.0f },
-    new float[]{0.2f, 0.1f, 0.6f},
+    new float[]{ 0.2f, 0.1f, 0.6f },
+
     new float[]{ 0.3f, 0.3f, 0.3f },
-    new float[]{0.8f, 0.5f, 0.2f},
+    new float[]{ 0.8f, 0.5f, 0.2f },
+
+    new float[]{ 0.2f, 0.7f, 0.4f },
+    new float[]{ 0.7f, 0.4f, 0.2f },
+
 };
 void Renderer::SetStage(Stages s){
-  testTex->SetVertexColor2(stagecolor[s*2], stagecolor[s*2 + 1]);
+  testTex->SetVertexColor2(
+    stagecolor[s*2],
+    stagecolor[s*2 + 1]);
 }
 //オフスクリーンレンダ　ステンシルバッファ　キューブマップ
 

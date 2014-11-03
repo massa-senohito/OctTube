@@ -98,23 +98,28 @@ ref class Enemy
   void squidProfile(World,V2);
   void motion();
   AnimAsset* anim;
-  SoundAsset* sound;
   Body* tents;
   Body* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
+  int hp;
+  bool selfDelete = false;
 public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz,EnemyKind);
   b2AABB& GetActBox();
-  //void SetPoints(Points,int);
+  void SetHp(int);
   void SetAssets(int kind);
+  //SetProfileにすべきかも
+  void SetProfile(EnemyKind);
   bool IsAllMeatFired();
-  int* GainPoints();
+  int* GetScore();
   ~Enemy();
   //EnemyData GetEnemyData();
   int Age;
   void Impulse(V2);
   void Force(V2 v);
   void Veloc(V2 v);
+  //アセットと物理データをアンロード
+  void UnLoad();
 
   Body GetBody();
   void Update(bool);
