@@ -10,9 +10,10 @@ typedef b2Fixture* Fixture;
 typedef b2PolygonShape* PShape;
 typedef b2CircleShape* CShape;
 typedef b2Vec2 V2;
+#define Bodies std::vector<Body>
 //typedef System::Tuple<float,float>^ V;
 //error LNK2038 : '_ITERATOR_DEBUG_LEVEL' の不一致が検出されました。
-
+//debugビルドだとvectorのサイズチェックが入る、リリースビルドだと入らなくなる、この不一致のこと
 void playSquidDamageSound();
 typedef void(* OnHit)() ;
 #define zerov V2(0, 0)
@@ -98,8 +99,9 @@ ref class Enemy
   void squidProfile(World,V2);
   void motion();
   AnimAsset* anim;
-  Body* tents;
-  Body* sqTentacle(V2 parentPos);
+  //追加ボディ,クラスにまとめればDisoposeで一気に開放できる
+  Bodies* appendBody;
+  Bodies* sqTentacle(V2 parentPos);
   PEnemyData* tentData;
   int hp;
   bool selfDelete = false;
@@ -107,8 +109,6 @@ public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz,EnemyKind);
   b2AABB& GetActBox();
   void SetHp(int);
-  void SetAssets(int kind);
-  //SetProfileにすべきかも
   void SetProfile(EnemyKind);
   bool IsAllMeatFired();
   int* GetScore();

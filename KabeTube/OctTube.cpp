@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
+#include "PhysicCoefficient.h"
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 #include "TextureTest.h"
@@ -234,10 +235,11 @@ void quitF(){
 int main(int argc,char* argv[])
 {
   try{
-
-	  //fivePerlin(1);
+    
+    //fivePerlin(1);
     //atexit(quitF);
 
+    //readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
     kabeMain(argv[0]);
     //texTest(argc,argv);
     //TextureTest();

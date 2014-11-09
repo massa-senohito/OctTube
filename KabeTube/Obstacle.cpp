@@ -131,8 +131,14 @@ PShape sqTentShape(V2& pos,fl ang){
 }
   //enemydata,body利用してるので順番に注意
 const int tentacleCount = 3;
-Body* Enemy::sqTentacle(V2 parentPos){
-  auto bods   = new Body[tentacleCount];//shapeに追加すればいいんじゃない
+
+Bodies* Enemy::sqTentacle(V2 parentPos)
+{
+  //shapeに追加すればjoint追加しなくてもいいんじゃない
+  auto bodsr = (new Bodies());
+  bodsr->resize(3);
+    //new Body[tentacleCount];
+  auto& bods = *bodsr;
   auto underp = parentPos + V2(31.f, -20.f);
   auto street =sqTentShape(underp, 0.f);
   auto le     =sqTentShape(underp+V2( 7.1f , 2.f) ,-5.7f);
@@ -143,9 +149,10 @@ Body* Enemy::sqTentacle(V2 parentPos){
   auto m      = b2MassData();
   street->ComputeMass( &m , 1/24.0f );
   auto w      = body->GetWorld();
-  bods[0]     = w->CreateBody(def);
-  bods[1]     = w->CreateBody(def);
-  bods[2]     = w->CreateBody(def);
+  bods[0]  =(w->CreateBody(def));
+  bods[1]  =(w->CreateBody(def));
+  bods[2]  =(w->CreateBody(def));
+  //bods[2]     = w->CreateBody(def);
   auto f1     = bods[0]->CreateFixture(street, 0);
   auto f2     = bods[1]->CreateFixture(le, 0);
   auto f3     = bods[2]->CreateFixture(ri, 0);
@@ -163,7 +170,7 @@ Body* Enemy::sqTentacle(V2 parentPos){
   bods[0]->SetMassData(&m);
   bods[1]->SetMassData(&m);
   bods[2]->SetMassData(&m);
-  return bods;
+  return (&bods);
 }
 void Enemy::squidProfile(World w,V2 pos){
   actBox            = b2AABB();
@@ -175,7 +182,6 @@ void Enemy::squidProfile(World w,V2 pos){
   s                 ->SetAsBox(10, 15,V2(0,5),0);
   auto m            = b2MassData();
   s                 ->ComputeMass(&m,0.1f);
-  
   def               = new b2BodyDef();
   def->position     = pos;
   //def->angle = 90;
@@ -188,10 +194,10 @@ void Enemy::squidProfile(World w,V2 pos){
   fixture           = body->CreateFixture(s,0);
   fixture           ->SetUserData(e);
   fixture           ->SetSensor(false);
-  tents             = sqTentacle(pos);
-  auto& j    = joint(w, body, tents[0]);
-  auto& jj   = joint(w, body, tents[1]);
-  auto& jjj  = joint(w, body, tents[2]);
+  appendBody        = sqTentacle(pos);
+  auto& j    = joint(w, body, (*appendBody)[0]);
+  auto& jj   = joint(w, body, (*appendBody)[1]);
+  auto& jjj  = joint(w, body, (*appendBody)[2]);
 
   auto mass  = body->GetMass();
 }
@@ -205,6 +211,7 @@ Enemy::Enemy(World w, b2Vec2 pos, float32 size, EnemyKind ek)
     squidProfile(w, pos);
     break;
   case Dragon:
+    
     break;
   default:
     break;
@@ -230,16 +237,11 @@ void Enemy::Veloc(V2 v){
 int* Enemy::GetScore(){
   return new int[]{ *e->Damage ,*tentData[0]->Damage,*tentData[1]->Damage,*tentData[2]->Damage};
 }
-void Enemy::SetAssets(int kind){
-  auto kin = static_cast<EnemyKind>(kind);
-  anim     = new AnimAsset(kin);
-}
 void Enemy::SetProfile(EnemyKind kin)
 {
   //auto kin  = static_cast<EnemyKind>(kind);
-  anim      = new AnimAsset(kin);
+  anim       = new AnimAsset(kin);
   squidAsset = new SoundAsset(kin);
-
 }
 enum Moving{
   R,
@@ -329,7 +331,7 @@ bool
   {
     //0なら不死
     if (hp == 0){ return false; }
-    int length=0;//
+    int length=0;//eがdeleteされていて読み取れない
     auto dam = *e->Damage;
     for (int i = 0; i < tentacleCount; i++)
     {
@@ -382,14 +384,13 @@ Body Enemy::GetBody(){
 void Enemy::UnLoad()
 {
   if (selfDelete){
-
-    delete s;
-    delete &squidAsset;
-    delete anim;
-    delete def;
+    SAFE_DELETE( s);
+    SAFE_DELETE( (squidAsset));
+    SAFE_DELETE( anim);
+    SAFE_DELETE( def);
   }
   else{
-
+    //物理データとアセットをアンロード
   }
 }
 Enemy::~Enemy(){
@@ -399,9 +400,14 @@ Enemy::~Enemy(){
   {
     w->DestroyJoint(j);
   }
-  delete e->Damage;
+  SAFE_DELETE( e->Damage);
+
+  std::for_each(appendBody->begin(), appendBody->end(), [&w](Body b){w->DestroyBody(b); });
+  appendBody->clear();
+  SAFE_DELETE(appendBody);
   w->DestroyBody(body);
+
   UnLoad();
-  delete e;
-  delete[] tentData;
+  SAFE_DELETE( e);
+  DA( tentData);
 }

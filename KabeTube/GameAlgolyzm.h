@@ -94,6 +94,7 @@ class GameAlgolyzm
   Stages stage;
   std::string& currentStagePath;
   bool isClear;
+  bool isResultScreen();
   void makeMonster(stringArray coes);
   //void makeMonster(stringArray coes);
   void fileRead(String filename, PPhysicSystem sys);

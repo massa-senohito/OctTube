@@ -173,8 +173,7 @@ void GameAlgolyzm::makeMonster(stringArray coes )
   
   enemy->Impulse(V2(6,11));
 
-  auto ps = Assets::getSquidPoints();
-  enemy->SetAssets(Squid); //
+  //enemy->SetAssets(Squid); //
   //enemy->SetPoints(ps,Assets::squidPLen());
 }
 //#define Path SvgFs::Loader::Path 
@@ -443,7 +442,8 @@ ClearStatus* GameAlgolyzm::HowAllMeatFired(int* ps)
 }
 
 bool GameAlgolyzm::AllEnemyFired(){
-  if (isClear)return true;
+  if (isResultScreen())return true;
+  if (isClear )return true;
   auto count = ens->Count;
   auto& e = (*ens);
   for (int i = 0; i < count; i++)
@@ -465,8 +465,8 @@ PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad,EnemyKind ek){
 }
 void GameAlgolyzm::SetStage(Stages s){
   auto si=scast<int>(s);
-  auto& csv = currentStagePath + "coe" + ".csv";
-  
+  auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
+  stage = s;
   fileRead(csv.data(),sys);
 }
 Stages GameAlgolyzm::onClearStage(Stages s)
@@ -475,13 +475,13 @@ Stages GameAlgolyzm::onClearStage(Stages s)
   auto sc=ens->Accumlate([](int acc, PEnemy e){return acc + 2; });
   auto ps = (data->at(0)->GetScore());  //Map(*data, gain);
   clearStatus.Add(HowAllMeatFired(ps));
-  if (s%2)
+  if (isResultScreen())
   {
     return s;
   }
   //%2で割り切れたらボタン入力待ち
   else{
-    return s;
+    return scast<Stages>(stage+1);
   }
 }
 void GameAlgolyzm::PrintResult(){
@@ -489,10 +489,14 @@ void GameAlgolyzm::PrintResult(){
   glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
     reinterpret_cast<const unsigned char*>(message));
 }
+bool GameAlgolyzm::isResultScreen(){
+  return stage % 2;
+}
 void GameAlgolyzm::Step(){
 
   auto stopping = sys->GetStopping();
-  if (!AllEnemyFired()){
+  bool fired=AllEnemyFired();
+  if (!fired){
 #ifdef _MANAGED
   for each (PEnemy var in ens)
   {
@@ -505,15 +509,18 @@ void GameAlgolyzm::Step(){
     std::for_each(data->begin(), data->end(),
       [&stopping](PEnemy i){ i->Update(stopping == 0); });
     step();
+#ifdef _DEBUG
+    sys->DrawDebug();
+#endif
 #endif
   }
   else{
     //結果画面表示,自分自身もsetstageして、ボタン入力待ちに
     //if (Key::getOneShotPushed()[Key::A])
-    if (!isClear)
+    if (!isResultScreen()&&!isClear)
     {
       //クリア後1度だけ
-      stage = onClearStage(scast<Stages>(stage+1));
+      stage = onClearStage(stage);
       rend->SetStage(stage);
       ens->Clear();
       isClear = true;
@@ -522,6 +529,7 @@ void GameAlgolyzm::Step(){
       //ctrlがoneshotしたら次のステージへ
       if (Key::getOneShotPushed()[Key::A]){
         SetStage(scast<Stages>(stage+1));
+        rend->SetStage(stage);
         isClear = false;
       }
     }

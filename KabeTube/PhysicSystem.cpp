@@ -218,7 +218,7 @@ void makeSinglePar(float x,float y,float vx,float vy){
 //パーティクルを継承した KomeParticle , StreamParticle 
 //StreamParticleは水のパーティクルグループ、
 //rigidparticle=崩れないパーティクルグループ
-int PhysicSystem::MakeParticle(float x,float y){
+int  PhysicSystem::MakeParticle(float x,float y){
   makeParticle(x,y);
   //pg-> rigidparticle でないとPositionとっても意味のない座標になる（たぶん重心が出るが、GetCenterあるのでそっちを）
   return 0;//pg->GetParticleCount();
@@ -243,11 +243,22 @@ void PhysicSystem::DrawDebug()
 {
   w->DrawDebugData();
 }
+void debugNextPage(int cont){
+  if (cont >= 25){ return; }
+  
+  for (size_t i = 0; i < 24-cont; i++)
+  {
+    std::cout << std::endl;
+  }
+}
 void step(){
   //グループを作成すると増える、
   //std::cout << particleSys->GetParticleGroupCount() << std::endl;
   //グループで一気に増える
-  //std::cout << particleSys->GetParticleCount() << std::endl;
+  std::cout << "particle:\t" <<particleSys->GetParticleCount() << std::endl;
+  std::cout << "body:\t" <<w->GetBodyCount()<<std::endl;
+  //debugNextPage(2);
+  //25行
   //小さいパーティクルシミュレーションのシミュレーションなら比較的大きな重力
   // b2CalculateParticleIterations helps to determine the number.
   float hz = 60.f;
@@ -283,9 +294,9 @@ void step(){
     glVertex2f( vdec(p2) );
     glVertex2f( vdec(p3) );
     glEnd();
+    //debugdraw時に勝手にやってくれるのでここで呼ぶ必要はない
     //dd->DrawCircle(v, 0.5, b2Color());
   });
-
 
 }
 

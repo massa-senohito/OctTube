@@ -11,6 +11,7 @@ class DotnetList
 #endif
 public:
   DotnetList<T>();
+  DotnetList<T>(int);
   TS* Data;
   ~DotnetList<T>();
   void Add(T);
@@ -18,17 +19,28 @@ public:
   //TSI Last();
   void Clear();
   int Count;
-
+  void Reserve(int);
   int Accumlate(std::function<int(int,T)>);
   void ForEach(std::function<void(T)>);
   T operator[](int i);
 };
 
+//reserve‚µ‚Ä‚àadd‚µ‚¿‚á‚¤‚Ì‚Å
+//template<typename T>
+//void DotnetList<T>::Reserve(int c){
+//  Data->reserve(c);
+//}
 template<typename T>
 DotnetList<T>::DotnetList() :Count(0)
 {
   Data = new TS();
 }
+template<typename T>
+DotnetList<T>::DotnetList(int size) :Count(0)
+{
+  Data = new TS(size);
+}
+
 template<typename T>
 T Add(T x, T y){
   return x + y;
@@ -81,7 +93,9 @@ void DotnetList<T>::Add(T item){
 }
 template<typename T>
 void DotnetList<T>::Clear(){
-  Data->clear();
+
+  //Data->clear();
+  ForEach([](T i){delete i; });
   Count = 0;
 }
 //template<typename T>
@@ -99,8 +113,8 @@ void DotnetList<T>::Clear(){
 
 template<typename T>
 T DotnetList<T>::operator[](int i)
-{
-  return Data->at(i);
+{//•ÏŠ·‚Å‚«‚È‚¢‚Æ‚¢‚í‚ê‚éAPens?
+  return Data->at(i);//[i];
 }
 #ifdef _MANAGED
 #else
