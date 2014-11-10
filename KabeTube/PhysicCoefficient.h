@@ -5,6 +5,8 @@
 #define SAFE_DELETE_ARRAY(p)     do { if(p) { delete[] (p); (p) = nullptr; } } while(0)
 #define DA(p) SAFE_DELETE_ARRAY(p)
 typedef long long int64;
+#define asint64(x) x->as<int64>()->value()
+#define asT(x,T) x->as<T>()->value()
 class PhysicCoefficient
 {
   b2Shape* shape;

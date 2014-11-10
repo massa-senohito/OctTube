@@ -239,8 +239,9 @@ int main(int argc,char* argv[])
     //fivePerlin(1);
     //atexit(quitF);
 
-    //readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
-    kabeMain(argv[0]);
+    readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
+    //kabeMain(argv[0]);
+    //‚½‚Ô‚ñkeyfunc‚ğŒÄ‚Ô‡”Ô‚Å‹““®‚ª‚¨‚©‚µ‚­‚È‚Á‚½AassimptestQÆ
     //texTest(argc,argv);
     //TextureTest();
   }catch
