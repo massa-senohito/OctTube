@@ -79,7 +79,6 @@ void PhysicSystem::delFences(){
   });
 
 #endif
-    obs->Clear();
 }
 void eachParticle(std::function<void(V2&)> f){
   auto length=particleSys->GetParticleCount();

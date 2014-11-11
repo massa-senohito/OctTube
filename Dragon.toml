@@ -1,0 +1,8 @@
+[Dragon.Body]
+  rect=[20,10,05]
+  denc=0.1
+  gravScale=0.01
+  angDamp=0.1
+  #type–¢Žw’è‚È‚çkinematic‚É
+  type="dynamic"
+  sensor=false

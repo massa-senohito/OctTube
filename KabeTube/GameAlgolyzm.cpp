@@ -236,6 +236,7 @@ Points svgRead(String name){
 void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
 {
   auto fi=File::ReadAllLines(filename);
+
 #ifdef _MANAGED
   int c=fi->Length;
 #else
@@ -458,16 +459,24 @@ Typhoon* GameAlgolyzm::Blow(V2 p, V2 dir, float rad){
 }
 PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad,EnemyKind ek){
   //onClearStageはシーン的なもの、これは
-  auto e=gcnew Enemy(sys->GetWorld(),V2(x,y),rad,ek);
-  ens->Add(e);
-  return e;
+  if (ens->Count > 0){
+    //ekによってloadtoml
+    auto e = ens->operator[](0);
+    e->UnLoad(ek);
+    return e;
+  }
+  else{
+    auto e = gcnew Enemy(sys->GetWorld(), V2(x, y), rad, ek);
+    ens->Add(e);
+    return e;
+  }
 }
 void GameAlgolyzm::SetStage(Stages s){
   auto si=scast<int>(s);
   auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
   stage = s;
   //deleteEnemyBody
-  
+    //setStageがcoeからとられてない、filereadでアンロードすべき
   sys->delFences();
   fileRead(csv.data(),sys);
 }

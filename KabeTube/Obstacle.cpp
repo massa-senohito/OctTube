@@ -203,7 +203,7 @@ void Enemy::squidProfile(World w,V2 pos){
   auto mass  = body->GetMass();
 }
 Enemy::Enemy(World w, b2Vec2 pos, float32 size, EnemyKind ek)
-:Age(0), points(nullptr), hp(100)
+:Age(0),  hp(100)
 {
   switch (ek)
   {
@@ -230,11 +230,6 @@ void Enemy::Force(V2 v)
 void Enemy::Veloc(V2 v){
   body->SetLinearVelocity(v);
 }
-//void Enemy::SetPoints(Points p,int len){
-//  points=p;
-//  pointsLength=len;
-  //Assetがelem 
-//}
 int* Enemy::GetScore(){
   return new int[]{ *e->Damage ,*tentData[0]->Damage,*tentData[1]->Damage,*tentData[2]->Damage};
 }
@@ -359,7 +354,6 @@ void Enemy::Update(bool move){
   //ダメージ分をシェーダに渡して頂点色をいじりたい
   //燻製なので白方面に
   //パーティクルが多くなると画面に白のもこもこが現れ、みづらくなる
-  //anim+=pointsLength;points[anim];
   static bool state = false;
   const int animLen = 38;
   if (Age % animLen == 0) {
@@ -385,7 +379,7 @@ Body Enemy::GetBody(){
   return body;
 }
 //EnemyData
-void Enemy::UnLoad()
+void Enemy::UnLoad(EnemyKind ek)
 {
   if (selfDelete){
     SAFE_DELETE( s);
@@ -396,6 +390,9 @@ void Enemy::UnLoad()
   else{
     //物理データとアセットをアンロード
     //if(kind==Next){}
+    SAFE_DELETE(anim);
+    anim = new AnimAsset(ek);
+    
   }
 }
 Enemy::~Enemy(){
@@ -407,12 +404,13 @@ Enemy::~Enemy(){
   }
   SAFE_DELETE( e->Damage);
 
-  std::for_each(appendBody->begin(), appendBody->end(), [&w](Body b){w->DestroyBody(b); });
+  std::for_each(appendBody->begin(), appendBody->end(),
+    [&w](Body b){w->DestroyBody(b); });
   appendBody->clear();
   SAFE_DELETE(appendBody);
   w->DestroyBody(body);
 
-  UnLoad();
+  UnLoad(EnemyKind::Len);
   SAFE_DELETE( e);
   DA( tentData);
 }

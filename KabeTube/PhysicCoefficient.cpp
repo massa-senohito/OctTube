@@ -4,7 +4,29 @@
 
 
 PhysicCoefficient::PhysicCoefficient()
+  :shapec{}
 {
+}
+
+void PhysicCoefficient::SetFloat(float v, string name){
+  if (name == "denc"){
+    //denc=v;
+  }
+  if (name == "gravScale"){
+    
+  }
+  if (name == "angDamp"){
+  }
+}
+void PhysicCoefficient::SetInt(int64 v, string name){
+
+}
+void PhysicCoefficient::SetString(string v, string name){
+
+}
+void PhysicCoefficient::SetBool(bool v, string name){
+  if (name == ""){
+  }
 }
 void PhysicCoefficient::setShape(b2Shape*)
 {
@@ -13,6 +35,16 @@ void PhysicCoefficient::setShape(b2Shape*)
 void PhysicCoefficient::setBodyDef(b2BodyDef*)
 {
 
+}
+void PhysicCoefficient::MakeBody(){
+  shape->SetAsBox(
+    shapec[0],
+    shapec[1],
+    b2Vec2(
+      shapec[2],
+      shapec[3]),
+    shapec[4]
+    );
 }
 void PhysicCoefficient::setFixDef(b2FixtureDef){
 
@@ -24,41 +56,60 @@ PhysicCoefficient::~PhysicCoefficient()
 }
 #define fun std::function
 typedef cpptoml::toml_group Group;
+typedef cpptoml::toml_base Base;
 //typedef std::list<std::string*> StrList;
 typedef std::string StrList;
 typedef fun<void(cpptoml::toml_base&,std::string&,StrList&)> TomlFun;
-void makeRect(cpptoml::toml_array& a){
+void makeRect(cpptoml::toml_array& a,PhysicCoefficient* c)
+{
   auto s=new b2PolygonShape();
   auto w = asint64(a.at(0));
   auto h = asint64(a.at(1));
   auto pos = b2Vec2(asint64(a.at(2)), asint64(a.at(3)));
   s->SetAsBox(w, h, pos, 0);
+  c->setShape(s);
 }
-void GetPhys(cpptoml::toml_base& t,std::string& name,StrList& parentname){
+void setBody(PhysicCoefficient* c){
+  b2BodyDef* b=new b2BodyDef();
+
+}
+
+void physParamFrom(Base& t,std::string& name,StrList& parentname,PhysicCoefficient* c){
   //再帰が深くなるとlistにpush_backされすぎる
   //ここはロード時だし、後でバイナリに変更できるのでsplitで
   //終了時にshape追加するなどして
   if (auto v = t.as<int64>()){
-
+    c->SetInt(v->value(), name);
   }
   if (auto v = t.as<std::string>()){
-
+    c->SetString(v->value(), name);
+  }
+  if (auto v = t.as<double>()){
+    c->SetFloat(v->value(), name);
+  }
+  if (auto v = t.as<bool>()){
+    c->SetBool(v->value(), name);
   }
   if (auto v = t.as_array()){
     if (name == "rect"){
-      auto x = asint64(v->at(0));
+      //map[name]=v;けっきょくまた順序の問題になるからこれで
+      makeRect(*v, c);
+      //decoratorはinterfaceを共有するクラスを受け取って追加していく
+      //monoid
     }
+    if (name == "pos");
+    if (name == "relPos");
   }
   
 }
-void recursiveGroup(Group& g,StrList& parent,TomlFun f){
+void recursiveGroup(Group& g,StrList& parent,TomlFun f,PhysicCoefficient* c){
   for (auto& i : g){
     
     auto type = i.second;
     auto ename = i.first;
     if (type->is_group()){
       auto paren = parent +"."+ ename;
-      recursiveGroup(*type->as_group(),paren,f);
+      recursiveGroup(*type->as_group(),paren,f,c);
       //parent.push_back(&ename);
     }
     else{
@@ -104,8 +155,8 @@ void origFun(string path){
 PhysicCoefficient* readFromToml(string path){
   auto pars = cpptoml::parse_file(path);
   StrList l;
-  recursiveGroup(pars,l, GetPhys);
   auto tmp = new PhysicCoefficient();
+  recursiveGroup(pars,l, physParamFrom,tmp);
   delete tmp;
   return tmp;
 }

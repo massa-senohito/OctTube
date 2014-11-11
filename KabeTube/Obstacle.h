@@ -93,9 +93,7 @@ ref class Enemy
   BodyDef def;
   PShape s;
   b2AABB actBox;
-  Points points; //draw時に名前で区別したほうが設計変更が少ないので、とりあえずおいておく
   EnemyData* e;
-  int pointsLength;
 
   void squidProfile(World,V2);
   void motion();
@@ -120,8 +118,7 @@ public:
   void Impulse(V2);
   void Force(V2 v);
   void Veloc(V2 v);
-  //アセットと物理データをアンロード
-  void UnLoad();
+  void UnLoad(EnemyKind);
 
   Body GetBody();
   void Update(bool);

@@ -53,7 +53,18 @@ AnimAsset::~AnimAsset(){
   DA( vertice);
   DA( elem);
 }
-
+void AnimAsset::SetPoints(Points v, int l){
+  SAFE_DELETE(vertice);
+  SAFE_DELETE(elem);
+  vertice = v;
+  vertLen = l;
+  elem = new uint[vertLen];
+  for (size_t i = 0; i < vertLen; i++)
+  {
+    elem[i] = i;
+  }
+  shader->SendVert(vertice, vertLen, elem);
+}
 //http://www-fps.nifs.ac.jp/ito/memo/openal02.html
 int ReadHeaderWav(FILE* fp, int *channel, int* bit, int *size, int* freq){
   short res16;

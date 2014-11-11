@@ -1,0 +1,23 @@
+[Squid.Body]
+#w,h,cx,cy
+  rect=[10,15,0,5]
+  denc=0.1
+  gravScale=0.01
+  angDamp=0.1
+  #type未指定ならkinematicに
+  type="dynamic"
+  sensor=false
+  
+[Squid.Tentacle.Body]
+  denc=0.041
+  pos=  [31.0,-20.0]
+  rect= [1,6,0,0]
+#bodyじゃないアイテムの数だけresizeして
+[Squid.Tentacle.tent1]
+
+[Squid.Tentacle.tent2]
+  relPos=[ 7.1 , 2.0]
+  ang= -5.7
+[Squid.Tentacle.tent3]
+  relPos=[-7.1 , 2.0]
+  ang=  5.7

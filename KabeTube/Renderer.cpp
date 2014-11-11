@@ -148,6 +148,7 @@ Renderer::Renderer(RenderCallback c,Callback close)
   drawCall=c;
   onClose = close;
   glLineWidth(5);
+  glPointSize(5);
   float one=1.0;
   float zero=0.0;
   glClearColor(zero, zero, zero,one);
