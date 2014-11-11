@@ -256,7 +256,6 @@ void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
      auto sx= strTofloat(coefar[4]);
      auto sy= strTofloat(coefar[5]);
      auto sz= strTofloat(coefar[6]);
-     //fence(x,y,z,sx,sy,sz,0.0f);
      sys->addFence(x,y,sx,sy);
      continue;
    }
@@ -271,7 +270,7 @@ void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
      );
      continue;
    }
-   //全部違うなら
+   //全部違うならモンスター
    makeMonster(coefar);
   }
 }
@@ -467,6 +466,9 @@ void GameAlgolyzm::SetStage(Stages s){
   auto si=scast<int>(s);
   auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
   stage = s;
+  //deleteEnemyBody
+  
+  sys->delFences();
   fileRead(csv.data(),sys);
 }
 Stages GameAlgolyzm::onClearStage(Stages s)
@@ -505,12 +507,12 @@ void GameAlgolyzm::Step(){
     //if(var)
   }
 #else
-    auto data = ens->Data;
-    std::for_each(data->begin(), data->end(),
+    ens->ForEach(
+    //std::for_each(data->begin(), data->end(),
       [&stopping](PEnemy i){ i->Update(stopping == 0); });
     step();
 #ifdef _DEBUG
-    sys->DrawDebug();
+    //sys->DrawDebug();
 #endif
 #endif
   }
@@ -529,6 +531,11 @@ void GameAlgolyzm::Step(){
       //ctrlがoneshotしたら次のステージへ
       if (Key::getOneShotPushed()[Key::A]){
         SetStage(scast<Stages>(stage+1));
+        ens->ForEach([](PEnemy e){
+          //e->Kind++;
+          //e->UnLoad(); するResetStage
+          //e->SetProfile(EnemyKind::Dragon);
+        });
         rend->SetStage(stage);
         isClear = false;
       }

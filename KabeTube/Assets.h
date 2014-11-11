@@ -18,7 +18,6 @@ class AnimAsset{
 public:
   void UpdateAnim(int);
   AnimAsset(EnemyKind); //
-
   void SetPoints(Points,int);
   void DamageColor(float HP);
   void NoUse();
@@ -30,10 +29,13 @@ class SoundAsset
 public:
   SoundAsset(EnemyKind);
   ~SoundAsset();
+  void SetAsset(EnemyKind);
   void PlayDamageSound();
   void PlayMovingSound();
 private:
   ALuint* sources;
   ALuint* bufs;
+  typedef std::map<std::string*, ALuint*> LoadedMap;
+  LoadedMap& loaded;
 };
 

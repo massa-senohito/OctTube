@@ -21,10 +21,18 @@ public:
   int Count;
   void Reserve(int);
   int Accumlate(std::function<int(int,T)>);
+  bool All(std::function<bool(T)>);
   void ForEach(std::function<void(T)>);
   T operator[](int i);
 };
 
+template<typename T>
+bool DotnetList<T>::All(std::function<bool(T)> f){
+  for (auto i : Data){
+    if (!f(i)) return false;
+  }
+  return true;
+}
 //reserve‚µ‚Ä‚àadd‚µ‚¿‚á‚¤‚Ì‚Å
 //template<typename T>
 //void DotnetList<T>::Reserve(int c){

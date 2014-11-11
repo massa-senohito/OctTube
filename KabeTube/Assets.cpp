@@ -171,7 +171,8 @@ void initialize(){
   isInit = true;
 }
 
-SoundAsset::SoundAsset(EnemyKind ek)
+
+SoundAsset::SoundAsset(EnemyKind ek) :loaded(*(new LoadedMap()))
 {
   if (!isInit)initialize();
   //ALuint* squidSources;
@@ -183,6 +184,12 @@ SoundAsset::SoundAsset(EnemyKind ek)
   alGenSources(2, sources);
   alSourcei(sources[0], AL_BUFFER, bufs[0]);
   alSourcei(sources[1], AL_BUFFER, bufs[1]);
+}
+void SoundAsset::SetAsset(EnemyKind ek){
+  //yakeとidoSEファイル名を読み、すでにbufsにあるなら読まない
+  auto key = new std::string("");
+  auto load=loaded.find(key);
+  if (load == loaded.end());
 }
 void SoundAsset::PlayDamageSound(){
   alSourcePlay(sources[1]);

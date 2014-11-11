@@ -84,7 +84,8 @@ CircleSensor::~CircleSensor(){
 Obstacle::Obstacle(World w,b2Vec2 pos,b2Vec2 size)
   :x(0),y(0),xx(0),yy(0),
   inverceMove(false),movable(false),
-  inverceCount(0)
+  inverceCount(0),
+  isOuter(false)
 {
   def=new b2BodyDef();
   s  =new b2PolygonShape;
@@ -344,6 +345,9 @@ bool
 void Enemy::SetHp(int hp){
   this->hp=hp;
 }
+void Enemy::SetPos(V2& pos){
+  body->SetTransform(pos, 0);
+}
 void Enemy::Update(bool move){
   Age++;
   //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
@@ -391,6 +395,7 @@ void Enemy::UnLoad()
   }
   else{
     //物理データとアセットをアンロード
+    //if(kind==Next){}
   }
 }
 Enemy::~Enemy(){

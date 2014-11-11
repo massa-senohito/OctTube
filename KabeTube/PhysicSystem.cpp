@@ -67,16 +67,19 @@ void delExactObstacle(PObstacle b){
 void PhysicSystem::delFences(){
 
 #ifdef _MANAGED
-  for each (PObstacle var in obs)
-  {
-    delExactObstacle(var);
-  }
+    for each (PObstacle var in obs)
+    {
+      delExactObstacle(var);
+    }
 #else
-  auto data = obs->Data;
-  std::vector<PObstacle>::iterator d = data->begin();
-  std::for_each(d,data->end(),delExactObstacle);
+    //auto data = obs->Data;
+    //std::for_each(d,data->end(),delExactObstacle);
+  obs->ForEach([](PObstacle o){
+    if(!o->isOuter)delExactObstacle(o);
+  });
+
 #endif
-  obs->Clear();
+    obs->Clear();
 }
 void eachParticle(std::function<void(V2&)> f){
   auto length=particleSys->GetParticleCount();
@@ -112,6 +115,7 @@ void PhysicSystem::makeOuterFence(f32 x,f32 y){
   obs->Add(f2);
   obs->Add(f3);
   obs->Add(f4);
+  obs->ForEach([](PObstacle o){o->isOuter = true; });
 }
 
 
@@ -121,8 +125,7 @@ int PhysicSystem::GetStopping() {
 World PhysicSystem::GetWorld(){
   return w;
 }
-PhysicSystem::PhysicSystem(void)
-  
+PhysicSystem::PhysicSystem(void) 
 {
   //toi=タイムオブインパクトｚｃ
   w=new b2World(grav);
@@ -307,7 +310,9 @@ void PhysicSystem::Step(){
 }
 PhysicSystem::~PhysicSystem(){
 
-  delFences();
+  //delFences();
+  obs->ForEach(delExactObstacle);
+  obs->Clear();
   std::cout << "フェンスを削除" << std::endl;
   SAFE_DELETE(obs);
   SAFE_DELETE(dd);

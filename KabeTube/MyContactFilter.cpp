@@ -31,7 +31,7 @@ bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 a){
     else StoppingFlame--;
     collideAndDamage( f , sys , a );
     //なぜかtrue返すとシミュレーションが安定する,falseだとめり込んだり
-    return true;//壁とは衝突する
+    return false;//壁とは衝突する
   }
   else return true;
 }

@@ -24,24 +24,42 @@ PhysicCoefficient::~PhysicCoefficient()
 }
 #define fun std::function
 typedef cpptoml::toml_group Group;
-typedef fun<void(cpptoml::toml_base&,std::string&,std::string&)> TomlFun;
-void GetPhys(cpptoml::toml_base& t,std::string& name,std::string& parentname){
+//typedef std::list<std::string*> StrList;
+typedef std::string StrList;
+typedef fun<void(cpptoml::toml_base&,std::string&,StrList&)> TomlFun;
+void makeRect(cpptoml::toml_array& a){
+  auto s=new b2PolygonShape();
+  auto w = asint64(a.at(0));
+  auto h = asint64(a.at(1));
+  auto pos = b2Vec2(asint64(a.at(2)), asint64(a.at(3)));
+  s->SetAsBox(w, h, pos, 0);
+}
+void GetPhys(cpptoml::toml_base& t,std::string& name,StrList& parentname){
+  //再帰が深くなるとlistにpush_backされすぎる
+  //ここはロード時だし、後でバイナリに変更できるのでsplitで
+  //終了時にshape追加するなどして
   if (auto v = t.as<int64>()){
 
   }
   if (auto v = t.as<std::string>()){
 
   }
+  if (auto v = t.as_array()){
+    if (name == "rect"){
+      auto x = asint64(v->at(0));
+    }
+  }
   
 }
-void recursiveGroup(Group& g,std::string& parent,TomlFun f){
+void recursiveGroup(Group& g,StrList& parent,TomlFun f){
   for (auto& i : g){
     
     auto type = i.second;
-    
     auto ename = i.first;
     if (type->is_group()){
-      recursiveGroup(*type->as_group(),parent+"."+ename,f);
+      auto paren = parent +"."+ ename;
+      recursiveGroup(*type->as_group(),paren,f);
+      //parent.push_back(&ename);
     }
     else{
       f(*type,ename,parent);
@@ -85,7 +103,8 @@ void origFun(string path){
 }
 PhysicCoefficient* readFromToml(string path){
   auto pars = cpptoml::parse_file(path);
-  recursiveGroup(pars,std::string(""), GetPhys);
+  StrList l;
+  recursiveGroup(pars,l, GetPhys);
   auto tmp = new PhysicCoefficient();
   delete tmp;
   return tmp;

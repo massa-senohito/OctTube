@@ -133,7 +133,7 @@ void fivePerlin(float z){
 
 }
 void disp( void ) {
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //  static auto squid 
 //    = "C:\\Users\\massa_senohito\\Documents\\Visual Studio 11\\Projects\\SvgFs\\SvgTest\\bin\\Debug\\squid3allFlame";
 //  static auto ps=svgRead(squid);
@@ -149,10 +149,26 @@ void disp( void ) {
         glVertex2f(nine , -nine);
   */
   glScalef(scale,scale,1.0f);
-  glBegin(es[5]);
-  fivePerlin(per);
- // renderVertice(ps,Assets::squidPLen());
-  //glEnd();
+  if (1){
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+    float one = 0.5;
+    glTexCoord2d(0.0, 1.0);   glVertex2d(-one, one);
+    glTexCoord2d(0.0, 0.0);   glVertex2d(-one, -one);
+    glTexCoord2d(1.0, 0.0);   glVertex2d(one, -one);
+    glTexCoord2d(1.0, 1.0);   glVertex2d(one, one);
+
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+  }
+  else{
+    glBegin(es[5]);
+    //fivePerlin(per);
+
+    // renderVertice(ps,Assets::squidPLen());
+    glEnd();
+  }
   glFlush();
 }
 void key(int key, int, int){
@@ -202,23 +218,27 @@ int texTest(int argc , char ** argv){
   }
 
   glutInit(&argc , argv);
-  glutInitWindowSize( 400 , 300 );
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
+  glutInitWindowSize( 400 , 300 );
   
-  glutCreateWindow("Kitty on your lap");
+  glutCreateWindow("bit color tex test");
+  glClearColor(0, 0.5, 0, 1);
   glutDisplayFunc ( disp );
   glutTimerFunc   (100 , timert , 0);
   glutSpecialFunc ( key );
   glutKeyboardFunc( nokey );
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
   glEnable        ( GL_TEXTURE_2D );
   glGenTextures   (1 , &texName );
   glBindTexture   (GL_TEXTURE_2D , texName);
-
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//ägëÂÅEèkè¨Ç…Ç¬Ç¢ÇƒÇÃê›íË
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexImage2D(
     GL_TEXTURE_2D , 0 , 3 , TEXSIZE , TEXSIZE ,
     0 , GL_RGB , GL_UNSIGNED_BYTE , bits
   );
-  glDeleteTextures(1, &texName);
+  //glDeleteTextures(1, &texName);
   glutMainLoop();
   return 0;
 }
@@ -239,8 +259,8 @@ int main(int argc,char* argv[])
     //fivePerlin(1);
     //atexit(quitF);
 
-    readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
-    //kabeMain(argv[0]);
+    //readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
+    kabeMain(argv[0]);
     //ÇΩÇ‘ÇÒkeyfuncÇåƒÇ‘èáî‘Ç≈ãììÆÇ™Ç®Ç©ÇµÇ≠Ç»Ç¡ÇΩÅAassimptestéQè∆
     //texTest(argc,argv);
     //TextureTest();

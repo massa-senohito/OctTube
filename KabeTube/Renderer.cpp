@@ -44,7 +44,8 @@ typedef const char* string;
 float32 radius=0;//2
 float32 pradius=0.1f;
 const float32 pi=3.141592f;
-
+//描画されるオブジェクト側がsetMask等を指定するか
+//レンダラ側でフラグによって描画分ける//でも設計が面倒なので
 void setMask(GLint ref);
 void setPoly(GLint ref);
 //typedef void (APIENTRY *GLDEBUGPROC)(GLenum source, GLenum type,
@@ -146,6 +147,7 @@ Renderer::Renderer(RenderCallback c,Callback close)
 {
   drawCall=c;
   onClose = close;
+  glLineWidth(5);
   float one=1.0;
   float zero=0.0;
   glClearColor(zero, zero, zero,one);

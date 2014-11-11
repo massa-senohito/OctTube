@@ -76,6 +76,7 @@ ref class Obstacle
   int inverceCount;
 public:
   Obstacle(World,b2Vec2 pos,b2Vec2 size);
+  bool isOuter;
   ~Obstacle();
   Body GetBody();
   void Update();
@@ -109,6 +110,7 @@ public:
   Enemy(b2World* w,b2Vec2 pos,float32 siz,EnemyKind);
   b2AABB& GetActBox();
   void SetHp(int);
+  void SetPos(V2&);
   void SetProfile(EnemyKind);
   bool IsAllMeatFired();
   int* GetScore();

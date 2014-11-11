@@ -2,17 +2,22 @@
 #include "TextureTest.h"
 #include "stb_perlin.h"
 #include "DebugLogger.h"
-GLuint*      texture;
+#define  STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+GLuint*      texture=nullptr;
 DebugLogger& logger = *(new DebugLogger);
 typedef unsigned char  PixData;
 //typedef unsigned char* PPixData;
 typedef std::vector<PixData> PPixData;
-PPixData*    pixels;
+PPixData*    pixels=nullptr;
 int sizeX =  101;
 int sizeY =  101;
 void DrawPolys();
 int  DrawGLScene(GLvoid);
+stbi_uc* data =nullptr;
 
+#define SAFE_DELETE(p)           do { if(p) { delete (p); (p) = nullptr; } } while(0)
+#define SAFE_DELETE_ARRAY(p)     do { if(p) { delete[] (p); (p) = nullptr; } } while(0)
 void testDisplay()
 {
   DrawGLScene();
@@ -22,8 +27,9 @@ void testDisplay()
 void OnExit()
 {
   glDeleteTextures(1, texture);
-  delete texture;
-  delete[] pixels;
+  if (data){ stbi_image_free(data); data = nullptr; }
+  SAFE_DELETE( texture);
+  SAFE_DELETE_ARRAY( pixels);
 }
 void perlinTex(){
   auto kiz   = 0.02f;
@@ -40,10 +46,24 @@ void perlinTex(){
       nois  = nois / 2.0f * 255.0f;
       //pixels[count++] = nois;
       pixels-> push_back(nois);
+
     }
   }
 }
+bool loadPath(string s,stbi_uc* data){
+  int x,y, req_comp;
+  data = stbi_load(s.c_str(), &x, &y, &req_comp, STBI_rgb_alpha);
+  if (data){
+    auto form = req_comp == 3?GL_RGB: GL_RGBA;
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, form, x, y,
+      0, form, GL_UNSIGNED_BYTE, data
+      );
+  }
+  return data;
+}
 bool LoadGLTextures(){
+
   perlinTex();
   return 1;
 }
@@ -67,24 +87,29 @@ void tt(int value) {
 }
 void InitGlut(){
   auto one = 1; char* hoge = "";
-  glutInit( &one , &hoge );
-  glutInitWindowSize( 400 , 300 );
+
+  glutInit(&one, &hoge);
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH);
-  glutDisplayFunc( testDisplay );
-  glutTimerFunc(100 , tt , 0);
-  glutCloseFunc( OnExit );
-  glutCreateWindow("Kitty on your lap");
+  glutInitWindowSize( 400 , 300 );
+  
+  glutCreateWindow("file tex test");
+  glClearColor(0, 0.5, 0, 1);
+  glutDisplayFunc ( testDisplay);
+  glutTimerFunc   (100 , tt , 0);
+  //glutSpecialFunc ( key );
+  //glutKeyboardFunc( nokey );
 }
 int InitGL(GLvoid)                      // All Setup For OpenGL Goes Here
 {
   glEnable    (GL_TEXTURE_2D);              // Enable Texture Mapping ( NEW )
   glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
-  glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
   glClearDepth(1.0f);                   // Depth Buffer Setup
   glEnable    (GL_DEPTH_TEST);              // Enables Depth Testing
   glDepthFunc (GL_LEQUAL);               // The Type Of Depth Testing To Do
   glHint      (GL_PERSPECTIVE_CORRECTION_HINT,
     GL_NICEST);          // Really Nice Perspective Calculations
+
+  glEnable(GL_BLEND);
   return TRUE;                          // Initialization Went OK
 }
 TextureTest::TextureTest()
@@ -92,21 +117,27 @@ TextureTest::TextureTest()
 
   InitGlut();
   InitGL  ();
-  LoadGLTextures();
+  //LoadGLTextures();
   texture = new GLuint;
   glGenTextures(1, texture);   // Create The Texture
 
-  // Typical Texture Generation Using Data From The Bitmap
   glBindTexture(GL_TEXTURE_2D, *texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//Šg‘åEk¬‚É‚Â‚¢‚Ä‚ÌÝ’è
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  // Typical Texture Generation Using Data From The Bitmap
   // Generate The Texture
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, sizeX , sizeY
-    , 0, GL_RGB, GL_UNSIGNED_BYTE, pixels->data());
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Linear Filtering
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
+  if (!loadPath("D:\\onD\\OctTWork\\OctTube\\Debug\\tex.png", data)){
+    stbi_image_free( data);
+    exit(0);
+  }
+  //glTexImage2D(GL_TEXTURE_2D, 0, 3, sizeX , sizeY
+  //  , 0, GL_RGB, GL_UNSIGNED_BYTE, pixels->data());
   glutMainLoop();
 
 }
 void DrawPolys(){
+  
+  glEnable(GL_TEXTURE_2D);
   glBegin(GL_QUADS);
   // Front Face
   glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, 1.0f);  // Bottom Left Of The Texture and Quad
@@ -139,13 +170,15 @@ void DrawPolys(){
   glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 1.0f);  // Top Right Of The Texture and Quad
   glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, -1.0f);  // Top Left Of The Texture and Quad
   glEnd();
+  glDisable(GL_TEXTURE_2D);
 }
 int DrawGLScene(GLvoid)
 {
   glClear(GL_COLOR_BUFFER_BIT 
     | GL_DEPTH_BUFFER_BIT);       // Clear Screen And Depth Buffer
   glLoadIdentity();               // Reset The Current Matrix
-  glTranslatef( 0.0f , 0.0f, -5.0f );// Move Into The Screen 5 Units
+  glScalef(0.5, 0.5, 0.5);
+  //glTranslatef( 0.0f , 0.0f, -5.0f );// Move Into The Screen 5 Units
   glBindTexture(GL_TEXTURE_2D , *texture);// Select Our Texture
   return 1;
 }
