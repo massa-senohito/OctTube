@@ -7,6 +7,10 @@ std::string& path = std::string("");
 void Path::setPass(std::string& p){
   path = p;
 }
+std::string& Path::getPath()
+{
+  return path;
+}
 void AnimAsset::UpdateAnim(int flame){
   //if ( update ) ++count;
   shader->Render(flame);
@@ -18,7 +22,7 @@ cstring kind2String(EnemyKind ek){
     return "squid";
     break;
   case EnemyKind::Dragon:
-    return "";
+    return "dragon";
     break;
   default:
     return "none";
@@ -31,6 +35,7 @@ AnimAsset::AnimAsset(EnemyKind ek){
   auto fs = path + "squid.fs";
   shader = (new Shader(vs.data(), fs.data()));
   vertice = svgRead((path + kind2String(ek) ).data());
+  assert(vertice);
   vertLen = getSvgVLen();
   elem = new uint[vertLen];
   for (size_t i = 0; i < vertLen; i++)
@@ -148,6 +153,8 @@ int ReadHeaderWav(FILE* fp, int *channel, int* bit, int *size, int* freq){
 void openAndClose(std::string name,ALuint buffer){
   FILE* ip;
   auto er=fopen_s(&ip,name.data() , "rb");
+
+  assert(er==0);
   int freq, channel, size, bit;
   //最初にファイル数置けばバイナリにまとめられる
   ReadHeaderWav(ip,&channel,&bit,&size,&freq);
@@ -191,6 +198,7 @@ SoundAsset::SoundAsset(EnemyKind ek) :loaded(*(new LoadedMap()))
   alGenBuffers(2, bufs);
   openAndClose(path + kind2String(ek)+std::string("Ido.wav") , bufs[0]);
   openAndClose(path + std::string("yake.wav") , bufs[1]);
+
   sources = new ALuint[2];
   alGenSources(2, sources);
   alSourcei(sources[0], AL_BUFFER, bufs[0]);

@@ -1,6 +1,8 @@
 #pragma once
 #include "Box2D\Box2D.h"
 #include "Assets.h"
+//#include "DotNetWrap.h"
+//includeするだけでコンパイル通らなくなる
 typedef b2ParticleSystemDef* PDef ;
 typedef b2ParticleSystem* PSys;
 typedef b2World* World;
@@ -10,38 +12,55 @@ typedef b2Fixture* Fixture;
 typedef b2PolygonShape* PShape;
 typedef b2CircleShape* CShape;
 typedef b2Vec2 V2;
-#define Bodies std::vector<Body>
-//typedef System::Tuple<float,float>^ V;
-//error LNK2038 : '_ITERATOR_DEBUG_LEVEL' の不一致が検出されました。
-//debugビルドだとvectorのサイズチェックが入る、リリースビルドだと入らなくなる、この不一致のこと
+using Bodies = std::vector<Body>;
+//#define Bodies std::vector<Body>
+//typedef PEnemyData* AppendBodyData;//vectorに
+
+#define SAFE_DELETE(p)           do { if(p) { delete (p); (p) = nullptr; } } while(0)
+#define SAFE_DELETE_ARRAY(p)     do { if(p) { delete[] (p); (p) = nullptr; } } while(0)
+#define DA(p) SAFE_DELETE_ARRAY(p)
+#define zerov V2(0, 0)
 void playSquidDamageSound();
 typedef void(* OnHit)() ;
-#define zerov V2(0, 0)
 class EnemyData{
 public:
   const char* Name=nullptr;
   int* Damage=nullptr;
   OnHit onhit;
   V2 browDir;
-  EnemyData(int d, const char* n) :onhit(playSquidDamageSound), browDir(zerov)
+  EnemyData(int d, const char* n) 
+    :onhit(playSquidDamageSound),
+    browDir(zerov)
   {
     Damage = new int(d);
     Name = n;
   }
-  EnemyData() :onhit(playSquidDamageSound), browDir(zerov)
+  EnemyData() 
+    :onhit(playSquidDamageSound),
+    browDir(zerov)
   {
   
+  }
+  ~EnemyData()
+  {
+    SAFE_DELETE(Damage);
   }
   void SetOnHit(OnHit h){
     onhit = h;
   }
 };
+typedef EnemyData* PEnemyData;
+typedef std::vector<PEnemyData> AppendBodyData;
+typedef std::shared_ptr<std::vector<int>> Score;
+//typedef System::Tuple<float,float>^ V;
+//error LNK2038 : '_ITERATOR_DEBUG_LEVEL' の不一致が検出されました。
+//debugビルドだとvectorのサイズチェックが入る、リリースビルドだと入らなくなる、この不一致のこと
 #ifdef _MANAGED
 typedef array<float>^ Points;
 #else
 #define ref /**/
 #define Points float*
-typedef EnemyData* PEnemyData;
+//typedef float* Points;
 #endif
 //PhysicSystemと分けた理由
 //  アルゴリズムが込み入ってきた
@@ -82,7 +101,6 @@ public:
   void Update();
   void Movable();//x,y,xx,yy指定する、初期00
 };
-
 ref class Enemy
 #ifdef _MANAGED
 : IDisposable
@@ -94,24 +112,27 @@ ref class Enemy
   PShape s;
   b2AABB actBox;
   EnemyData* e;
-
+  World world;
   void squidProfile(World,V2);
   void motion();
   AnimAsset* anim;
   //追加ボディ,クラスにまとめればDisoposeで一気に開放できる
   Bodies* appendBody;
   Bodies* sqTentacle(V2 parentPos);
-  PEnemyData* tentData;
+  AppendBodyData tentData;
   int hp;
-  bool selfDelete = false;
+  bool selfDelete;
+  Enemy(const Enemy&) ;
+  Enemy& operator=(const Enemy&);
 public:
-  Enemy(b2World* w,b2Vec2 pos,float32 siz,EnemyKind);
+  Enemy(b2World* w,EnemyKind);
   b2AABB& GetActBox();
   void SetHp(int);
   void SetPos(V2&);
   void SetProfile(EnemyKind);
   bool IsAllMeatFired();
-  int* GetScore();
+  void Enemy::RefreshSubHP();
+  Score GetScore();
   ~Enemy();
   //EnemyData GetEnemyData();
   int Age;

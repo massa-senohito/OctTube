@@ -1825,7 +1825,7 @@ auto stagecolor = new float*[]{
 
     new float[]{ 0.2f, 0.7f, 0.4f },
     new float[]{ 0.7f, 0.4f, 0.2f },
-
+    nullptr,nullptr
 };
 void Renderer::SetStage(Stages s){
   testTex->SetVertexColor2(

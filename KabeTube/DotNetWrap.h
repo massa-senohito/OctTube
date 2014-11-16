@@ -15,16 +15,26 @@ public:
   TS* Data;
   ~DotnetList<T>();
   void Add(T);
-  //TSI First();
+  //T First();
   //TSI Last();
   void Clear();
   int Count;
-  void Reserve(int);
+  void Resize(int);
   int Accumlate(std::function<int(int,T)>);
   bool All(std::function<bool(T)>);
   void ForEach(std::function<void(T)>);
+  void CutOff();
   T operator[](int i);
 };
+
+template<typename T>
+void DotnetList<T>::CutOff()
+{
+  //リアロケートするより後半を
+  for (auto i : Data){
+    if ((i)) ;
+  }
+}
 
 template<typename T>
 bool DotnetList<T>::All(std::function<bool(T)> f){
@@ -33,11 +43,11 @@ bool DotnetList<T>::All(std::function<bool(T)> f){
   }
   return true;
 }
-//reserveしてもaddしちゃうので
-//template<typename T>
-//void DotnetList<T>::Reserve(int c){
-//  Data->reserve(c);
-//}
+template<typename T>
+void DotnetList<T>::Resize(int c){
+  Count = c;
+  Data->resize(c);
+}
 template<typename T>
 DotnetList<T>::DotnetList() :Count(0)
 {
@@ -94,6 +104,11 @@ DotnetList<T>::~DotnetList(){
   delete Data;
 }
 
+//template<typename T>
+//T DotnetList<T>::First()
+//{
+//  return Data->front();
+//}
 template<typename T>
 void DotnetList<T>::Add(T item){
   ++Count;

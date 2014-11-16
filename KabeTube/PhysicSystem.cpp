@@ -62,7 +62,11 @@ void PhysicSystem::addFence(f32 x,f32 y,f32 sx,f32 sy){
 void delExactObstacle(PObstacle b){
   //w->DestroyBody(b->GetBody());
   //b->Dispose();
-  delete b;
+  if (b)
+  {
+    delete(b);
+    b = nullptr;
+  }
 }
 void PhysicSystem::delFences(){
 
@@ -77,7 +81,7 @@ void PhysicSystem::delFences(){
   obs->ForEach([](PObstacle o){
     if(!o->isOuter)delExactObstacle(o);
   });
-
+  obs->Resize(4);
 #endif
 }
 void eachParticle(std::function<void(V2&)> f){

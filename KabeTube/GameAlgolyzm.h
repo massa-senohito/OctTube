@@ -24,6 +24,7 @@ typedef DotnetList<Typhoon*>* PTys;
 
 typedef float32 f32;
 
+std::vector<std::string> Split(std::string str, char delim);
 void drawClothHair(float);
 float toRad(float);
 float toDeg(float);
@@ -83,9 +84,9 @@ class GameAlgolyzm
 {
   ClearStatusList clearStatus;
   PhysicSystem* sys;
-  ClearStatus* HowAllMeatFired(int*);
+  ClearStatus* HowAllMeatFired(Score);
   char* message;
-  PEnemy addEnemy(f32,f32,f32 rad,EnemyKind);
+  PEnemy addEnemy(EnemyKind);
   bool AllEnemyFired();
   PTyphoon Blow(V2 pos,V2 dir,f32 rad);
 
@@ -100,7 +101,7 @@ class GameAlgolyzm
   void fileRead(String filename, PPhysicSystem sys);
   void PrintResult();
 public:
-  GameAlgolyzm(stringArray arg);
+  GameAlgolyzm(Vector<std::string> arg);
   void Step();
   void SetStage(Stages);
   void Render();

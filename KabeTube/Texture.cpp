@@ -120,6 +120,8 @@ void latestGLTex(float* vs,GLuint texName){
 }
 void Texture::SetVertexColor2(float* upcol,float* downcol)
 {
+  _ASSERT(upcol);
+  _ASSERT(downcol);
   upc   = upcol;
   downc = downcol;
 }

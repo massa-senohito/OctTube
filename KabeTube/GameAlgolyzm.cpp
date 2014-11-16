@@ -56,7 +56,7 @@ namespace File{
       auto lines = new stringArray;
       while (fgets(line, maxCharInLine, p))
       {
-        lines->push_back(line);
+        lines->push_back( std::string(line));
       }
       fclose(p);
       return lines;
@@ -147,13 +147,17 @@ float bej(float t){
 //using vector<T>=std::vector<T>;
 //パースしたデータはランダムアクセスで拾うのでvectorでいいや
 //http://shnya.jp/blog/?p=195
-std::vector<std::string> Split(std::string str, char delim){
-  std::istringstream iss(str); std::string tmp; std::vector<std::string> res;
+std::vector<std::string> Split(std::string str, char delim)
+{
+  std::istringstream iss(str);
+  //sharedポインタでないと、一つのアドレスしか返さないし、生存期間過ぎてしまう
+  std::string tmp;
+  std::vector<std::string> res;
   while(getline(iss, tmp, delim)) res.push_back(tmp);
   return res;
 }
-float strTofloat(std::string str){
-    return scast<float>(Convert::ToSingle(str.c_str()));
+float strTofloat(std::string& str){
+    return scast<float>(Convert::ToSingle((str).c_str()));
 }
 void GameAlgolyzm::makeMonster(stringArray coes )
 {
@@ -162,15 +166,15 @@ void GameAlgolyzm::makeMonster(stringArray coes )
   auto pat  = coes[1];
   auto x    = strTofloat( coes[2]);
   auto y    = strTofloat( coes[3]);
+  //int hp    = strTofloat(coes[4]); tomlのとかぶるので
   if(pat=="vmove"){
     
   }
   //-16,11でとばす
   auto enemy = 
-    name == "squid"      ? addEnemy(-32,0,1,EnemyKind::Squid) :
-    name == "dragonbody" ? addEnemy(-32,0,1,EnemyKind::Squid) :
-                           addEnemy(-32,0,1,EnemyKind::Squid);
-  
+    name == "squid"      ? addEnemy(EnemyKind::Squid) :
+    name == "dragonbody" ? addEnemy(EnemyKind::Dragon) :
+                           addEnemy(EnemyKind::Squid);
   enemy->Impulse(V2(6,11));
 
   //enemy->SetAssets(Squid); //
@@ -248,24 +252,25 @@ void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
    auto coefar=fi[i]->Split(',');
 #else
     auto coefar = Split(fi->at(i), ',');
+    if (coefar.size() == 1)continue;
 #endif
-   std::string name=coefar[0]; 
+   std::string& name=(coefar[0]); 
    if(name=="Cube"){
-     auto x = strTofloat(coefar[1]);
-     auto y = strTofloat(coefar[2]);
-     auto z = strTofloat(coefar[3]);
-     auto sx= strTofloat(coefar[4]);
-     auto sy= strTofloat(coefar[5]);
-     auto sz= strTofloat(coefar[6]);
+     auto x = strTofloat( (coefar[1]));
+     auto y = strTofloat( (coefar[2]));
+     auto z = strTofloat( (coefar[3]));
+     auto sx= strTofloat( (coefar[4]));
+     auto sy= strTofloat( (coefar[5]));
+     auto sz= strTofloat( (coefar[6]));
      sys->addFence(x,y,sx,sy);
      continue;
    }
    if(name=="blow"){
-     auto x  = strTofloat(coefar[1]);
-     auto y  = strTofloat(coefar[2]);
-     auto dx = strTofloat(coefar[3]);
-     auto dy = strTofloat(coefar[4]);
-     auto rad= strTofloat(coefar[5]);
+     auto x  = strTofloat( (coefar[1]));
+     auto y  = strTofloat( (coefar[2]));
+     auto dx = strTofloat( (coefar[3]));
+     auto dy = strTofloat( (coefar[4]));
+     auto rad= strTofloat( (coefar[5]));
      Blow(
        V2(x, y), V2(dx,dy), rad
      );
@@ -371,7 +376,7 @@ void onRenderFrame(int time){
   glEnd();
   glLoadIdentity();
 }
-GameAlgolyzm::GameAlgolyzm(stringArray args)
+GameAlgolyzm::GameAlgolyzm(Vector<std::string> args)
 :sys(gcnew PhysicSystem)
  , stage(Stages::Stage1)
  , isClear(0)
@@ -383,7 +388,7 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
 {
   ens = gcnew Enes;
   tys = gcnew Tys ;
-  auto path    = args[0];
+  auto& path    = args[0];
   auto lastBel = path.find_last_of('\\');
   path         = path.substr(0,lastBel+1);
   path         += "assets\\";
@@ -424,18 +429,18 @@ GameAlgolyzm::GameAlgolyzm(stringArray args)
 std::string tos(int i){ return std::to_string(i)+'\n'; }
 std::string leg(int i){ return "leg"+tos(i)+": "; }
 ///クリア評価
-ClearStatus* GameAlgolyzm::HowAllMeatFired(int* ps)
+ClearStatus* GameAlgolyzm::HowAllMeatFired(Score ps)
 {
   if (stage == Stage1)
   {
-    auto asiPoint = ps[1] + ps[2] + ps[3];
-    auto clrstr = std::string("squid: ") + tos(ps[0])
-      + leg(0) + tos(ps[1])
-      + leg(1) + tos(ps[2])
-      + leg(2) + tos(ps[3]);
+    auto asiPoint = ps->at(1) + ps->at(2) + ps->at(3);
+    auto clrstr = std::string("squid: ") + tos(ps->at(0))
+      + leg(0) + tos(ps->at(1))
+      + leg(1) + tos(ps->at(2))
+      + leg(2) + tos(ps->at(3));
     if (asiPoint>20){ clrstr += "\ntastes good."; }
     strcpy(( message), clrstr.data());
-    return (new ClearStatus( asiPoint > 20, asiPoint + ps[0]));
+    return (new ClearStatus( asiPoint > 20, asiPoint + ps->at(0)));
   }
   return(new ClearStatus(false, 0));
   //return 1;
@@ -444,6 +449,7 @@ ClearStatus* GameAlgolyzm::HowAllMeatFired(int* ps)
 bool GameAlgolyzm::AllEnemyFired(){
   if (isResultScreen())return true;
   if (isClear )return true;
+  assert(ens);
   auto count = ens->Count;
   auto& e = (*ens);
   for (int i = 0; i < count; i++)
@@ -457,7 +463,7 @@ Typhoon* GameAlgolyzm::Blow(V2 p, V2 dir, float rad){
   tys->Add(typ);
   return typ;
 }
-PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad,EnemyKind ek){
+PEnemy GameAlgolyzm::addEnemy(EnemyKind ek){
   //onClearStageはシーン的なもの、これは
   if (ens->Count > 0){
     //ekによってloadtoml
@@ -466,25 +472,27 @@ PEnemy GameAlgolyzm::addEnemy(f32 x,f32 y,f32 rad,EnemyKind ek){
     return e;
   }
   else{
-    auto e = gcnew Enemy(sys->GetWorld(), V2(x, y), rad, ek);
+    auto e = gcnew Enemy(sys->GetWorld(), ek);
+    e->SetProfile(ek);
     ens->Add(e);
     return e;
   }
 }
 void GameAlgolyzm::SetStage(Stages s){
   auto si=scast<int>(s);
-  auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
   stage = s;
   //deleteEnemyBody
     //setStageがcoeからとられてない、filereadでアンロードすべき
   sys->delFences();
+  auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
+  assert(si < 3);
   fileRead(csv.data(),sys);
+  ens->ForEach([](PEnemy e){e->RefreshSubHP(); });
 }
 Stages GameAlgolyzm::onClearStage(Stages s)
 {
-  auto data = ens->Data;
   auto sc=ens->Accumlate([](int acc, PEnemy e){return acc + 2; });
-  auto ps = (data->at(0)->GetScore());  //Map(*data, gain);
+  auto ps = (ens->operator[](0)->GetScore());  //Map(*data, gain);
   clearStatus.Add(HowAllMeatFired(ps));
   if (isResultScreen())
   {
@@ -533,18 +541,12 @@ void GameAlgolyzm::Step(){
       //クリア後1度だけ
       stage = onClearStage(stage);
       rend->SetStage(stage);
-      ens->Clear();
       isClear = true;
     }
     else{
       //ctrlがoneshotしたら次のステージへ
       if (Key::getOneShotPushed()[Key::A]){
         SetStage(scast<Stages>(stage+1));
-        ens->ForEach([](PEnemy e){
-          //e->Kind++;
-          //e->UnLoad(); するResetStage
-          //e->SetProfile(EnemyKind::Dragon);
-        });
         rend->SetStage(stage);
         isClear = false;
       }

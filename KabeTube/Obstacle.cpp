@@ -2,6 +2,7 @@
 #include "Obstacle.h"
 #include "GameAlgolyzm.h"
 #include "Renderer.h"
+#include "PhysicCoefficient.h"
 SoundAsset* squidAsset;
 void playSquidDamageSound()
 {
@@ -74,11 +75,11 @@ CircleSensor::~CircleSensor(){
   {
     w->DestroyJoint(j);
   }
-  delete e->Damage;
+  SAFE_DELETE( e->Damage);
   w->DestroyBody(bod);
-  delete s;
-  delete e;
-  delete bdef;
+  SAFE_DELETE( s);
+  SAFE_DELETE( e);
+  SAFE_DELETE( bdef);
 }
 //高速化するならsizeはV2にしないでおく
 Obstacle::Obstacle(World w,b2Vec2 pos,b2Vec2 size)
@@ -108,8 +109,8 @@ Obstacle::~Obstacle()
   auto w=body->GetWorld();
   w->DestroyBody(body);
   
-  delete s;
-  delete def;
+  SAFE_DELETE(s);
+  SAFE_DELETE(def);
   
   //body->DestroyFixture で子の一部をパージできる
   //fixture ,jointはdeleteすんなって　おそらくボディがゾンビになったりしたときに回収されるはず
@@ -131,7 +132,6 @@ PShape sqTentShape(V2& pos,fl ang){
   return s;
 }
   //enemydata,body利用してるので順番に注意
-const int tentacleCount = 3;
 
 Bodies* Enemy::sqTentacle(V2 parentPos)
 {
@@ -157,7 +157,8 @@ Bodies* Enemy::sqTentacle(V2 parentPos)
   auto f1     = bods[0]->CreateFixture(street, 0);
   auto f2     = bods[1]->CreateFixture(le, 0);
   auto f3     = bods[2]->CreateFixture(ri, 0);
-  tentData    = new EnemyData*[3];
+  //tentData    = new EnemyData*[3];
+  tentData.resize(3);
   tentData[0] = new EnemyData(0,"tent0");
   tentData[1] = new EnemyData(0,"tent1");
   tentData[2] = new EnemyData(0,"tent2");
@@ -199,25 +200,11 @@ void Enemy::squidProfile(World w,V2 pos){
   auto& j    = joint(w, body, (*appendBody)[0]);
   auto& jj   = joint(w, body, (*appendBody)[1]);
   auto& jjj  = joint(w, body, (*appendBody)[2]);
-
-  auto mass  = body->GetMass();
 }
-Enemy::Enemy(World w, b2Vec2 pos, float32 size, EnemyKind ek)
-:Age(0),  hp(100)
+Enemy::Enemy(World w, EnemyKind ek)
+:Age(0), hp(100), world(w),
+selfDelete(false), tentData((AppendBodyData()))
 {
-  switch (ek)
-  {
-  case Squid:
-    //squid.csvでアセットと形状、トランスフォーム
-    squidProfile(w, pos);
-    break;
-  case Dragon:
-    
-    break;
-  default:
-    break;
-  }
-  SetProfile(ek);
 }
 void Enemy::Impulse(V2 v)
 {
@@ -230,14 +217,46 @@ void Enemy::Force(V2 v)
 void Enemy::Veloc(V2 v){
   body->SetLinearVelocity(v);
 }
-int* Enemy::GetScore(){
-  return new int[]{ *e->Damage ,*tentData[0]->Damage,*tentData[1]->Damage,*tentData[2]->Damage};
+Score Enemy::GetScore(){
+  //std::shared_ptrにしてクリア成績に参照させるか
+  auto sc = std::shared_ptr<Vector<int>>(new Vector<int>(tentData.size()));
+  auto size = tentData.size();
+  sc->resize(size+1);
+  sc->operator[](0) = *e->Damage;
+  for (size_t i = 1; i < size; i++)
+  {
+    sc->operator[](i) = *tentData[i]->Damage;
+  }
+
+  //{ *e->Damage ,*tentData[0]->Damage,
+  //*tentData[1]->Damage,*tentData[2]->Damage};
+  return sc;
 }
 void Enemy::SetProfile(EnemyKind kin)
 {
+
+  decltype(readFromToml("")) phy;
+  switch (kin)
+  {
+  case Squid:
+    //squid.csvでアセットと形状、トランスフォーム
+    squidProfile(world, V2(-32,0));
+    anim       = new AnimAsset(kin);
+    squidAsset = new SoundAsset(kin);
+    break;
+  case Dragon:
+    phy=readFromToml(Path::getPath()+"Dragon.toml");
+    SetHp(phy->HP);
+    body=phy->MakeBody(*world);
+    def =std::move( phy->getBodyDef());
+    fixture =std::move( phy->getFixDef());
+    e =reinterpret_cast<EnemyData*> (fixture->GetUserData());
+    
+    break;
+  default:
+    break;
+  }
   //auto kin  = static_cast<EnemyKind>(kind);
-  anim       = new AnimAsset(kin);
-  squidAsset = new SoundAsset(kin);
 }
 enum Moving{
   R,
@@ -329,10 +348,12 @@ bool
     if (hp == 0){ return false; }
     int length=0;//eがdeleteされていて読み取れない
     auto dam = *e->Damage;
-    for (int i = 0; i < tentacleCount; i++)
+    auto size = appendBody ? appendBody->size() : 0;
+    for (int i = 0; i < size; i++)
     {
       dam = dam + *tentData[i]->Damage;
     }
+    //それぞれのDamageを0に、nameを修正
     auto defeated=dam>hp;
     return defeated;
 }
@@ -340,11 +361,21 @@ bool
 void Enemy::SetHp(int hp){
   this->hp=hp;
 }
+void Enemy::RefreshSubHP()
+{
+  *e->Damage = 0;
+  auto size = appendBody ? appendBody->size() : 0;
+  for (int i = 0; i < size; i++)
+  {
+    *tentData[i]->Damage = 0;
+  }
+}
 void Enemy::SetPos(V2& pos){
   body->SetTransform(pos, 0);
 }
 void Enemy::Update(bool move){
   Age++;
+  assert(appendBody->size() < 1000);
   //body->ApplyLinearImpulse(V2(1,0),V2(120,0), false);
   if (!IsAllMeatFired())
     motion();
@@ -381,7 +412,31 @@ Body Enemy::GetBody(){
 //EnemyData
 void Enemy::UnLoad(EnemyKind ek)
 {
+
+  auto w=body->GetWorld();
+  auto count = w->GetJointCount();
+  int i = 0;
+  auto p = new b2Joint*[count];
+  for (auto j=w->GetJointList();i<count ; j=j->GetNext(),++i)
+  {
+    p[i] = j;
+  }
+  for (size_t i = 0; i < count; ++i)
+  {
+    w->DestroyJoint(p[i]);
+  }
+  SAFE_DELETE_ARRAY(p);
+  tentData.clear();
+  if (appendBody)
+  {
+    std::for_each(appendBody->begin(), appendBody->end(),
+      [&w](Body b){w->DestroyBody(b); });
+    appendBody->clear();
+  }
+  SAFE_DELETE( e);
+  w->DestroyBody(body);
   if (selfDelete){
+    SAFE_DELETE(appendBody);
     SAFE_DELETE( s);
     SAFE_DELETE( (squidAsset));
     SAFE_DELETE( anim);
@@ -392,25 +447,14 @@ void Enemy::UnLoad(EnemyKind ek)
     //if(kind==Next){}
     SAFE_DELETE(anim);
     anim = new AnimAsset(ek);
-    
+    SetProfile(ek);
+    int k = 0;
   }
 }
 Enemy::~Enemy(){
   selfDelete = true;
-  auto w=body->GetWorld();
-  for (auto j=w->GetJointList(); j!=nullptr; j=j->GetNext())
-  {
-    w->DestroyJoint(j);
-  }
-  SAFE_DELETE( e->Damage);
-
-  std::for_each(appendBody->begin(), appendBody->end(),
-    [&w](Body b){w->DestroyBody(b); });
-  appendBody->clear();
-  SAFE_DELETE(appendBody);
-  w->DestroyBody(body);
 
   UnLoad(EnemyKind::Len);
-  SAFE_DELETE( e);
-  DA( tentData);
+  //DA( tentData);
+  tentData.clear();
 }

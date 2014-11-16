@@ -245,7 +245,7 @@ int texTest(int argc , char ** argv){
 GameAlgolyzm* ga;
 void kabeMain(const char* args){
   auto ar = Vector<std::string>();
-  ar.push_back(std::string( args ));
+  ar.push_back( std::string( args ));
   ga = new GameAlgolyzm( ar );
 }
 
@@ -261,7 +261,6 @@ int main(int argc,char* argv[])
 
     //readFromToml("D:\\onD\\OctTWork\\OctTube\\Debug\\Squid.toml");
     kabeMain(argv[0]);
-    //‚½‚Ô‚ñkeyfunc‚ğŒÄ‚Ô‡”Ô‚Å‹““®‚ª‚¨‚©‚µ‚­‚È‚Á‚½AassimptestQÆ
     //texTest(argc,argv);
     //TextureTest();
   }catch

@@ -4,80 +4,158 @@
 
 
 PhysicCoefficient::PhysicCoefficient()
-  :shapec{}
+:
+//shapec{},
+  children(*(new ChildrenList)), mass(new b2MassData)
+  , shape(new b2PolygonShape), def(new b2BodyDef), edata(new EnemyData(0,""))
+  , child(nullptr)
 {
+
 }
 
+PhysicCoefficient::~PhysicCoefficient()
+{
+  SAFE_DELETE(def);
+  SAFE_DELETE(shape);
+  SAFE_DELETE(mass);
+  //SAFE_DELETE(edata);
+  DA(child);
+}
 void PhysicCoefficient::SetFloat(float v, string name){
   if (name == "denc"){
-    //denc=v;
-  }
-  if (name == "gravScale"){
+    dencity=v;
     
   }
+  if (name == "gravScale"){
+    def->gravityScale = v;
+  }
   if (name == "angDamp"){
+    def->angularDamping = v;
   }
 }
 void PhysicCoefficient::SetInt(int64 v, string name){
-
-}
-void PhysicCoefficient::SetString(string v, string name){
-
-}
-void PhysicCoefficient::SetBool(bool v, string name){
-  if (name == ""){
+  if (name == "hp")
+  {
+    HP = v;
   }
 }
-void PhysicCoefficient::setShape(b2Shape*)
+void PhysicCoefficient::SetString(string v, string name){
+  if (v == "dynamic")
+    //type未指定ならkinematicに
+    def->type = b2BodyType::b2_dynamicBody;
+}
+void PhysicCoefficient::SetBool(bool v, string name){
+  if (name == "sensor"){
+    isSensor = v;
+  }
+}
+
+void PhysicCoefficient::SetArray(Array& v, string name)
 {
 
-}
-void PhysicCoefficient::setBodyDef(b2BodyDef*)
-{
+    if (name == "rect"){
+      //map[name]=v;けっきょくまた順序の問題になるからこれで
 
+      makeRect(v);
+    }
+    if (name == "pos")
+    {
+      auto& p = b2Vec2(asT(v.at(0), double), asT(v.at(1), double));
+      def->position = p;
+      //v->at(;
+    }
+    if (name == "relPos")
+    {
+      auto& ppos=parent->def->position;
+      auto& p =
+        b2Vec2(asT(v.at(0), double) + ppos.x, asT(v.at(1), double) + ppos.y);
+      def->position = p;
+    }
 }
-void PhysicCoefficient::MakeBody(){
-  shape->SetAsBox(
-    shapec[0],
-    shapec[1],
-    b2Vec2(
-      shapec[2],
-      shapec[3]),
-    shapec[4]
-    );
+PhysicCoefficient& PhysicCoefficient::GetChild(StrList& cname){
+  //newしてくれないとかならfindして手動で何とか
+  if (cname.size() == 1)
+  {
+    return *children[&cname.front()];
+  }
+  //もとはvecなので
+  cname.pop_front();
+  GetChild(cname);
 }
-void PhysicCoefficient::setFixDef(b2FixtureDef){
 
+PhysicCoefficient& PhysicCoefficient::GetChild(string& cname){
+  //newしてくれないとかならfindして手動で何とか
+  return *children[&cname];
 }
-PhysicCoefficient::~PhysicCoefficient()
+void PhysicCoefficient::setShape(b2Shape* s)
 {
-  //SAFE_DELETE(def);
-  //SAFE_DELETE(shape);
+  shape = s;
+}
+b2BodyDef* PhysicCoefficient::getBodyDef()
+{
+  return def;
+}
+
+void PhysicCoefficient::makeJoint(b2World& w, b2Body& b)
+{
+  b2PrismaticJointDef joi;
+  auto anc = b.GetWorldCenter() - body->GetWorldCenter();
+  //auto joi = b2DistanceJointDef();
+  joi.Initialize(&b, body
+    , anc / 2 , anc / 2);
+  joi.enableLimit = true;
+  joi.upperTranslation = 1;
+  joi.lowerTranslation= -1;
+  w.CreateJoint(&joi);
+}
+b2Body* PhysicCoefficient::MakeBody(b2World& w)
+{
+  shape->ComputeMass(mass, dencity);
+  body = w.CreateBody(def);
+  for (int i = 0; i < childCount; i++)
+  {
+    auto& cbody= *child[i]->MakeBody(w);
+    makeJoint(w, cbody);
+  }
+  fix = body->CreateFixture(shape,dencity);
+  fix ->SetSensor(isSensor);
+  def->userData = edata;
+  fix ->SetUserData(edata);
+  return body;
+}
+b2Fixture* PhysicCoefficient::getFixDef(){
+  return fix;
 }
 #define fun std::function
 typedef cpptoml::toml_group Group;
 typedef cpptoml::toml_base Base;
 //typedef std::list<std::string*> StrList;
-typedef std::string StrList;
-typedef fun<void(cpptoml::toml_base&,std::string&,StrList&)> TomlFun;
-void makeRect(cpptoml::toml_array& a,PhysicCoefficient* c)
+typedef fun<void(Base&,std::string&,string&,PhysicCoefficient*)> TomlFun;
+void PhysicCoefficient::makeRect(cpptoml::toml_array& a)
 {
   auto s=new b2PolygonShape();
   auto w = asint64(a.at(0));
-  auto h = asint64(a.at(1));
-  auto pos = b2Vec2(asint64(a.at(2)), asint64(a.at(3)));
+  auto& h = asint64(a.at(1));
+  auto& pos = b2Vec2(asint64(a.at(2)), asint64(a.at(3)));
   s->SetAsBox(w, h, pos, 0);
-  c->setShape(s);
+  setShape(s);
 }
 void setBody(PhysicCoefficient* c){
   b2BodyDef* b=new b2BodyDef();
 
 }
 
-void physParamFrom(Base& t,std::string& name,StrList& parentname,PhysicCoefficient* c){
+void physParamFrom(Base& t,string& name,string& parentname,PhysicCoefficient* c){
   //再帰が深くなるとlistにpush_backされすぎる
   //ここはロード時だし、後でバイナリに変更できるのでsplitで
   //終了時にshape追加するなどして
+  auto& parent=Split(parentname, '.');
+  auto parentls =std::unique_ptr<StrList>( new StrList(parent.begin(),parent.end()));
+  if (parentls->back() == "Body")
+  {
+    int p = 0;
+  }
+
   if (auto v = t.as<int64>()){
     c->SetInt(v->value(), name);
   }
@@ -85,35 +163,51 @@ void physParamFrom(Base& t,std::string& name,StrList& parentname,PhysicCoefficie
     c->SetString(v->value(), name);
   }
   if (auto v = t.as<double>()){
-    c->SetFloat(v->value(), name);
+    
+    c->SetFloat((float)v->value(), name);
   }
   if (auto v = t.as<bool>()){
     c->SetBool(v->value(), name);
   }
   if (auto v = t.as_array()){
-    if (name == "rect"){
-      //map[name]=v;けっきょくまた順序の問題になるからこれで
-      makeRect(*v, c);
-      //decoratorはinterfaceを共有するクラスを受け取って追加していく
-      //monoid
-    }
-    if (name == "pos");
-    if (name == "relPos");
+    c->SetArray(*v, name);
   }
   
 }
-void recursiveGroup(Group& g,StrList& parent,TomlFun f,PhysicCoefficient* c){
+void recursiveGroup(Group& g,string& parent,TomlFun f,PhysicCoefficient* c)
+{
   for (auto& i : g){
     
     auto type = i.second;
     auto ename = i.first;
-    if (type->is_group()){
+    if (type->is_group())
+    {
       auto paren = parent +"."+ ename;
-      recursiveGroup(*type->as_group(),paren,f,c);
+      auto& group=*type->as_group();
+      if (ename != "Body")
+      {
+	//Setnameはあと回し
+        int children = group.size();
+        if (children > 2)
+        {
+	  //仕方なくここにロジック書く
+          auto subbody = children - 1;
+          c->child =
+            new PhysicCoefficient*[subbody];
+          c->childCount = subbody;
+          for (int j = 0; j < subbody; j++)
+          {
+            auto p = new PhysicCoefficient();
+            recursiveGroup(group, parent, f, p);
+            c->child[j] = p;
+          }
+        }
+      }
+      recursiveGroup(group,paren,f,c);
       //parent.push_back(&ename);
     }
     else{
-      f(*type,ename,parent);
+      f(*type,ename,parent,c);
     }
   }
 }
@@ -152,11 +246,12 @@ void origFun(string path){
   }
 
 }
-PhysicCoefficient* readFromToml(string path){
+#define sPtr std::shared_ptr
+sPtr<PhysicCoefficient> readFromToml(string path){
   auto pars = cpptoml::parse_file(path);
-  StrList l;
-  auto tmp = new PhysicCoefficient();
-  recursiveGroup(pars,l, physParamFrom,tmp);
-  delete tmp;
+  string l;
+  auto tmp = std::make_shared < PhysicCoefficient>();
+  recursiveGroup(pars,l, physParamFrom,tmp.get());
+  //worldから全ボディをとってきてイテレータで消せば
   return tmp;
 }
