@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "GameAlgolyzm.h"
-#include "PhysicSystem.h"
 #include "Renderer.h"
 #include "Assets.h"
+#include "Screen.h"
 #define scast static_cast
 uint svgVLength;
 Renderer* rend;
@@ -283,6 +283,7 @@ void GameAlgolyzm::fileRead(String filename,PPhysicSystem sys)
 
 ///最後に撃った時のフレーム
 int lastFiredFrame=int(0);
+b2AABB PlayerRect=b2AABB();
 float angle=float(90);
 #define pos 0.5f,0.4f
 float posx = 29; float posy = -18.5f;
@@ -353,8 +354,13 @@ void playerControl(int time){
 //float scalex = 0, scaley = -98.5;
 //timeは17ミリ秒ごとにカウント
 //void drawFish(
+Screen* screen;
 void onRenderFrame(int time){
-  //if(c%50==0){makeParticle(pos);}
+  screen->Show();
+  if (screen->GetScreenName() == ScreenName::Title)
+  {
+    return;
+  }
   playerControl(time);
   sys->Step();
 #ifdef _DEBUG //todo デバッグ用の壁描画 
@@ -376,6 +382,8 @@ void onRenderFrame(int time){
   glEnd();
   glLoadIdentity();
 }
+
+//cconstrac
 GameAlgolyzm::GameAlgolyzm(Vector<std::string> args)
 :sys(gcnew PhysicSystem)
  , stage(Stages::Stage1)
@@ -386,6 +394,8 @@ GameAlgolyzm::GameAlgolyzm(Vector<std::string> args)
   //:ens(gcnew Enes),
   //tys(gcnew Tys)
 {
+  PlayerRect.lowerBound.Set( 0, -40);
+  PlayerRect.upperBound.Set(53,  40);
   ens = gcnew Enes;
   tys = gcnew Tys ;
   auto& path    = args[0];
@@ -393,6 +403,7 @@ GameAlgolyzm::GameAlgolyzm(Vector<std::string> args)
   path         = path.substr(0,lastBel+1);
   path         += "assets\\";
   currentStagePath = path;
+  screen = new Screen(path);
   Path::setPass(path);
   Assets::tako     = svgRead((path+"takoallFlame").data());
   Assets::takoLen  = svgVLength;
@@ -405,9 +416,7 @@ GameAlgolyzm::GameAlgolyzm(Vector<std::string> args)
   Assets::wall    = svgRead((path + "wallallflame").data());
   Assets::wallLen = svgVLength;
 
-  int len = 0; //(args->Length);
   //glewInit呼ばないといけないので
-  GLUT_INITs(len ,nullptr);
   //sys->MakeParticle(pos);
   //char ** arg= strMap(args);//opentkだと？
   ///drawable,steppable作るべき
@@ -441,6 +450,10 @@ ClearStatus* GameAlgolyzm::HowAllMeatFired(Score ps)
     if (asiPoint>20){ clrstr += "\ntastes good."; }
     strcpy(( message), clrstr.data());
     return (new ClearStatus( asiPoint > 20, asiPoint + ps->at(0)));
+  }
+  if (stage==Stage2)
+  {
+    //翼が先なら
   }
   return(new ClearStatus(false, 0));
   //return 1;
@@ -484,6 +497,7 @@ void GameAlgolyzm::SetStage(Stages s){
   //deleteEnemyBody
     //setStageがcoeからとられてない、filereadでアンロードすべき
   sys->delFences();
+  sys->DeleteAllParticle();
   auto& csv = currentStagePath + "coe" +std::to_string(si)+ ".csv";
   assert(si < 3);
   fileRead(csv.data(),sys);
@@ -491,7 +505,8 @@ void GameAlgolyzm::SetStage(Stages s){
 }
 Stages GameAlgolyzm::onClearStage(Stages s)
 {
-  auto sc=ens->Accumlate([](int acc, PEnemy e){return acc + 2; });
+  //auto sc=ens->Accumlate([](int acc, PEnemy e)
+  //  {return acc + 2; });
   auto ps = (ens->operator[](0)->GetScore());  //Map(*data, gain);
   clearStatus.Add(HowAllMeatFired(ps));
   if (isResultScreen())
@@ -511,11 +526,40 @@ void GameAlgolyzm::PrintResult(){
 bool GameAlgolyzm::isResultScreen(){
   return stage % 2;
 }
-void GameAlgolyzm::Step(){
+bool GameAlgolyzm::IsGameOver()
+{
+  int particlesOnRight=QueryParticlesInAABB(PlayerRect);
 
+  if (particlesOnRight > 250)
+  {
+    message = "Game Over";
+    return true;
+  }
+  return false;
+}
+std::string& clearStatusString(ClearStatus& st)
+{
+  auto& wel = (st.IsWellBurned) ?
+    std::string("good") : std::string();
+  return wel;
+}
+
+void GameAlgolyzm::Step(){
+  if (screen->GetScreenName() == ScreenName::Title)
+  {
+    if (Key::getOneShotPushed()[Key::A])
+    {
+      screen->Hide();
+    }
+    return;
+  }
   auto stopping = sys->GetStopping();
   bool fired=AllEnemyFired();
-  if (!fired){
+  if(IsGameOver()){
+    PrintResult();
+    return;
+  }
+  if (!fired ){
 #ifdef _MANAGED
   for each (PEnemy var in ens)
   {
@@ -528,14 +572,9 @@ void GameAlgolyzm::Step(){
     //std::for_each(data->begin(), data->end(),
       [&stopping](PEnemy i){ i->Update(stopping == 0); });
     step();
-#ifdef _DEBUG
-    //sys->DrawDebug();
-#endif
 #endif
   }
   else{
-    //結果画面表示,自分自身もsetstageして、ボタン入力待ちに
-    //if (Key::getOneShotPushed()[Key::A])
     if (!isResultScreen()&&!isClear)
     {
       //クリア後1度だけ
@@ -543,10 +582,18 @@ void GameAlgolyzm::Step(){
       rend->SetStage(stage);
       isClear = true;
     }
-    else{
+    else
+    {
       //ctrlがoneshotしたら次のステージへ
-      if (Key::getOneShotPushed()[Key::A]){
-        SetStage(scast<Stages>(stage+1));
+      if (Key::getOneShotPushed()[Key::A])
+      {
+        SetStage(scast<Stages>(stage + 1));
+        if (stage == Stages::StagesLength)
+        {
+          clearStatus.ForEach([&](ClearStatus* c){
+            clearStatusString(*c);
+          });
+        }
         rend->SetStage(stage);
         isClear = false;
       }
@@ -568,9 +615,11 @@ void GameAlgolyzm::
 }
 GameAlgolyzm::~GameAlgolyzm(void)
 {
+  SAFE_DELETE(screen);
   //delete時にclear走ってるので
   SAFE_DELETE(ens);
   SAFE_DELETE(tys);
+  
   clearStatus.Clear();
   delete(&(clearStatus));
   SAFE_DELETE(rend);

@@ -30,6 +30,43 @@ struct DeleteObj {
     delete ptr;ptr=nullptr;
   }
 };
+class QueryCall
+  :public b2QueryCallback
+{
+private:
+  int particleCount = 0;
+public:
+  void ResetCount()
+  {
+    particleCount = 0;
+  }
+  QueryCall();
+  ~QueryCall();
+
+  bool ReportFixture(b2Fixture* fixture)
+  {
+    return false;
+  }
+  bool ReportParticle
+    (const b2ParticleSystem* particleSystem, int32 index)
+  {
+    ++particleCount;
+    return true;
+  }
+  int GetCount()
+  {
+    return particleCount;
+  }
+};
+
+QueryCall::QueryCall()
+{
+}
+
+QueryCall::~QueryCall()
+{
+}
+
 void makeFlyBox(float,float);
      //Shapes; 
 //void loadStage(PhysicSystem^ p ){
@@ -44,7 +81,7 @@ void makeFlyBox(float,float);
 PDef particleSysDef;
 PSys particleSys;
 World w;
-
+QueryCall* queryCall;
 void movableFence(f32 x,f32 y,
                   f32 sx,f32 sy,
                   f32 tox,f32){
@@ -95,7 +132,14 @@ void eachParticle(std::function<void(V2&)> f){
   }
 }
 //w->GetParticleFlagsBuffer()[i] |= b2_zombieParticle;
- 
+
+int QueryParticlesInAABB(b2AABB& aabb)
+{
+  w->QueryAABB(queryCall,aabb);
+  auto c = queryCall->GetCount();
+  queryCall->ResetCount();
+  return c;
+}
 DebugDraw* dd;
 void PhysicSystem::DrawAABB(b2AABB& aabb){
   dd->DrawAABB(aabb, false);
@@ -159,6 +203,7 @@ PhysicSystem::PhysicSystem(void)
   w->SetDebugDraw(dd);
   cfilter = new MyContactFilter;
   mlis    = new MyContactListener;
+  queryCall = new QueryCall;
   obs     = gcnew Obss;
   w->SetContactFilter  (cfilter);
   w->SetContactListener(mlis);
@@ -219,6 +264,7 @@ void makeSinglePar(float x,float y,float vx,float vy){
   d.velocity = V2(vx,vy);
   d.position = V2(x,y);
   d.flags    = pflag;
+  d.userData = new ParticleData();
   auto par   = particleSys->CreateParticle(d);
 }
 //パーティクルを継承した KomeParticle , StreamParticle 
@@ -257,12 +303,24 @@ void debugNextPage(int cont){
     std::cout << std::endl;
   }
 }
+void PhysicSystem::DeleteAllParticle()
+{
+  auto ps    = particleSys->GetFlagsBuffer();
+  auto count = particleSys->GetParticleCount();
+  for (int i = 0; i < count; i++)
+  {
+
+    particleSys->SetParticleFlags(i,b2ParticleFlag::b2_zombieParticle);
+  }
+}
 void step(){
   //グループを作成すると増える、
   //std::cout << particleSys->GetParticleGroupCount() << std::endl;
   //グループで一気に増える
-  std::cout << "particle:\t" <<particleSys->GetParticleCount() << std::endl;
-  std::cout << "body:\t" <<w->GetBodyCount()<<std::endl;
+  
+  //std::cout << "particle:\t" <<particleSys->GetParticleCount() << std::endl;
+  //std::cout << "body:\t" <<w->GetBodyCount()<<std::endl;
+
   //debugNextPage(2);
   //25行
   //小さいパーティクルシミュレーションのシミュレーションなら比較的大きな重力
@@ -320,6 +378,7 @@ PhysicSystem::~PhysicSystem(){
   SAFE_DELETE(obs);
   SAFE_DELETE(dd);
   SAFE_DELETE(cfilter);
+  delete queryCall;
   delete mlis;
   mlis = nullptr;
   w->DestroyParticleSystem(particleSys);

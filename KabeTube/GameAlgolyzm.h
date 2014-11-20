@@ -102,6 +102,7 @@ class GameAlgolyzm
   void PrintResult();
 public:
   GameAlgolyzm(Vector<std::string> arg);
+  bool IsGameOver();
   void Step();
   void SetStage(Stages);
   void Render();

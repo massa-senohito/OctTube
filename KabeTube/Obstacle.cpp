@@ -249,9 +249,10 @@ void Enemy::SetProfile(EnemyKind kin)
     SetHp(phy->HP);
     body=phy->MakeBody(*world);
     def =std::move( phy->getBodyDef());
+    //moveできないのか、途中で終了した
     fixture =std::move( phy->getFixDef());
     e =reinterpret_cast<EnemyData*> (fixture->GetUserData());
-    
+    //phy->moveFixDef(fixture);
     break;
   default:
     break;
@@ -265,6 +266,32 @@ enum Moving{
   TR,
 };
 static auto   mov = R;
+std::string makeString(Moving m)
+{
+  switch (m)
+  {
+  case R:
+    return "R";
+    break;
+  case L:
+    return "L";
+    break;
+  case TL:
+    return "TL";
+    break;
+  case TR:
+    return "TR";
+    break;
+  default:
+    break;
+  }
+}
+std::string makeString(String name, float v)
+{
+  auto vs=std::to_string(v);
+  return std::string(name) + (": ") + vs + '\n';
+}
+
 void Enemy::motion(){
   static float32 one = 1.0f;
   static float32 zero= 0.0f;
@@ -272,8 +299,6 @@ void Enemy::motion(){
   auto p             = body->GetPosition();
   float32 ang        = body->GetAngle();
   //-59,-37
-  glTranslatef  ( p.x , p.y , 0 );
-  glRotatef     ( toDeg( ang) + 180.0f , 0 , 0 , 1 );
 //キャッチボールみたいな動き＝外に壁があれば
   //数フレに1度Impulse
   //Unityで実験化
@@ -282,6 +307,13 @@ void Enemy::motion(){
   static const auto     stateWait = 20.0f;
   static auto               speed = one*800;
   static const auto     slowspeed = 0.1f;
+  auto dbs = makeString("rotationAnim", rotationAnim)
+    + makeString("animationstateWait", animationstateWait)
+    + makeString("speed", speed)
+    + makeString( mov);
+  assert(DrawDebugString(dbs.c_str()));
+  glTranslatef  ( p.x , p.y , 0 );
+  glRotatef     ( toDeg( ang) + 180.0f , 0 , 0 , 1 );
   glRotatef(rotationAnim,0,1,0);
   if (animationstateWait>0){
     switch (mov)
@@ -303,11 +335,9 @@ void Enemy::motion(){
     }
     if ( p.x > actBox.upperBound.x ){
       mov = TL;
-      //speed = slowspeed;
       rotationAnim = (1.0f-
         bej( ( stateWait - animationstateWait ) / stateWait ) ) * 180.0f; 
       rotationAnim = clamp( rotationAnim , 0.0f , 180.0f );
-
       --animationstateWait; //roty<-(1.0f-roty)* 180.0f
       //Force(V2(-one, zero));
       Veloc  ( V2( -one , zero ) );
@@ -317,7 +347,6 @@ void Enemy::motion(){
     }
     if (p.x < actBox.lowerBound.x){
       mov = TR;
-      //speed = slowspeed;
       rotationAnim= 
         bej( ( stateWait - animationstateWait ) / stateWait ) * 180.0f; 
       rotationAnim = clamp( rotationAnim , 0.0f , 180.0f );

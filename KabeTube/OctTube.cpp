@@ -246,6 +246,9 @@ GameAlgolyzm* ga;
 void kabeMain(const char* args){
   auto ar = Vector<std::string>();
   ar.push_back( std::string( args ));
+
+  int len = 0; //(args->Length);
+  GLUT_INITs(len ,nullptr);
   ga = new GameAlgolyzm( ar );
 }
 

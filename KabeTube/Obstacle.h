@@ -28,6 +28,8 @@ public:
   int* Damage=nullptr;
   OnHit onhit;
   V2 browDir;
+  //ここでテクスチャやサウンドデータを登録してもcontact時に呼び出せる
+  //Enemyポインタ持たせちゃうか
   EnemyData(int d, const char* n) 
     :onhit(playSquidDamageSound),
     browDir(zerov)

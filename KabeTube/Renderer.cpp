@@ -3,6 +3,7 @@
 #include "GUIUtil.h"
 #include "Texture.h"
 #include "GameAlgolyzm.h"
+
 namespace Key{
 
   bool pushed[Key::Length];
@@ -143,6 +144,7 @@ static const GLuint ignoreId[]={0};
 RenderCallback drawCall;
 Texture* testTex;
 Callback onClose;
+//cconstrac
 Renderer::Renderer(RenderCallback c,Callback close)
 {
   drawCall=c;
@@ -154,17 +156,9 @@ Renderer::Renderer(RenderCallback c,Callback close)
   glClearColor(zero, zero, zero,one);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
-  GLenum tex2d=GL_TEXTURE_2D;
-#define gltex(t) GL_TEXTURE ## t
-  glTexParameterf(tex2d,gltex(_WRAP_S),GL_CLAMP);
-  glTexParameterf(tex2d,gltex(_WRAP_T),GL_CLAMP);
-  glTexParameteri(tex2d,gltex(_MAG_FILTER),GL_NEAREST);
-  glTexParameteri(tex2d,gltex(_MIN_FILTER),GL_NEAREST);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glEnable(tex2d);
 
-  glPixelTransferi(GL_RED_SCALE,1);
-  glPixelStorei(GL_UNPACK_SWAP_BYTES,GL_TRUE);
+  //glPixelTransferi(GL_RED_SCALE,1);
+  //glPixelStorei(GL_UNPACK_SWAP_BYTES,GL_TRUE);
 
   stencilInit();
   //材質はglColorで設定する
@@ -416,6 +410,21 @@ void idle(){
 void cl(){
   onClose();
 }
+void initGL()
+{
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT,
+    GL_NICEST);          // Really Nice Perspective Calculations
+  glEnable(GL_BLEND);
+  GLenum tex2d=GL_TEXTURE_2D;
+#define gltex(t) GL_TEXTURE ## t
+  //glTexParameterf(tex2d,gltex(_WRAP_S),GL_CLAMP);//テクスチャをリピートしない設定
+  //glTexParameterf(tex2d,gltex(_WRAP_T),GL_CLAMP);
+  glTexParameteri(tex2d,gltex(_MAG_FILTER),GL_NEAREST);
+  glTexParameteri(tex2d,gltex(_MIN_FILTER),GL_NEAREST);
+  //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glEnable(tex2d);
+}
+
 void GLUT_CALL_FUNCs()
 {
   //gluiと取り合いになるらしいので
@@ -475,6 +484,7 @@ void GLUT_INITs(int argcp,char**argvp)
     true);
   //MakeFloor(vec3(0,3,0),10,floormat);
   GLUT_CALL_FUNCs();
+  initGL();
 }
 void oneCall(std::function<void(void)> f){
   static bool fl=false;
@@ -1825,12 +1835,25 @@ auto stagecolor = new float*[]{
 
     new float[]{ 0.2f, 0.7f, 0.4f },
     new float[]{ 0.7f, 0.4f, 0.2f },
+
+    new float[]{ 0.3f, 0.3f, 0.3f },
+    new float[]{ 0.8f, 0.5f, 0.2f },
+
+    new float[]{ 0.3f, 0.3f, 0.3f },//ゲームクリア後の
+    new float[]{ 0.8f, 0.5f, 0.2f },
     nullptr,nullptr
 };
 void Renderer::SetStage(Stages s){
   testTex->SetVertexColor2(
     stagecolor[s*2],
     stagecolor[s*2 + 1]);
+}
+bool DrawDebugString(const char* str)
+{
+  glRasterPos2f(-10, 10);
+  glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_10,
+    reinterpret_cast<const unsigned char*>(str));
+  return true;
 }
 //オフスクリーンレンダ　ステンシルバッファ　キューブマップ
 
@@ -1878,9 +1901,6 @@ void stencil(GLint refV){
 
 
 
-//drawSprite() 
-  //マスクされた場所だけ勝つするようにすれば台派のエフェクト、ゆたてぃぽっどで遊ぼう
-
 //setMask(1);//ステンシルに選びたいポリゴンは少数派のはず
 //drawYuta();
 //setPoly(2);//ステンシル値
@@ -1895,11 +1915,17 @@ void setMask(GLint refV){
   glStencilFunc(GL_NEVER,refV,alwaysmask);
   //glStencilMask(0);
 }
-
+void setPolyAlways(GLint refV)
+{
+  auto keep=GL_KEEP;
+  auto rep=GL_REPLACE;
+  glStencilOp(keep,keep,rep);
+  glStencilFunc(GL_ALWAYS,refV,alwaysmask);
+}
 void setPoly(GLint refV){
   auto keep=GL_KEEP;
-  auto rep=GL_INCR;
-  glStencilOp(keep,keep,keep);
+  auto rep=GL_REPLACE;
+  glStencilOp(keep,keep,rep);
   glStencilFunc(GL_GEQUAL,refV,alwaysmask);
 }
 const int cubeTexSize=128;

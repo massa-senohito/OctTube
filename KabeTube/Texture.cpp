@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "Texture.h"
-
 #include "Shader.h"
 
+//#define _TEXTEST
+#ifndef _TEXTEST
+#define  STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 //include対象でないクラスなら大丈夫
 static unsigned char tex[] = {
     255, 255, 255, 255,     0,   0,   0, 255,   255, 255, 255 ,255,     0,   0,   0, 255,
@@ -66,6 +69,60 @@ Texture::Texture(void)
 void inline bind2d(GLuint n){
     glBindTexture(GL_TEXTURE_2D,n);
 }
+
+bool loadPath(std::string s,stbi_uc* data){
+  int x,y, req_comp;
+  data = stbi_load(s.c_str(), &x, &y, &req_comp, STBI_rgb_alpha);
+  if (data){
+    auto form = req_comp == 3?GL_RGB: GL_RGBA;
+    glTexImage2D(
+      GL_TEXTURE_2D, 0, form, x, y,
+      0, form, GL_UNSIGNED_BYTE, data);
+  }
+  return data;
+}
+
+stbi_uc* data = nullptr;
+typedef std::unique_ptr<std::string> Strptr;
+typedef std::vector<Strptr> Paths;
+GLuint* reserveTexture(int num,Paths& paths)
+{
+  assert(num == paths.size());
+  auto texs = new GLuint[num];
+  glGenTextures(num, texs);
+  for (int i = 0; i < num; i++)
+  {
+    glBindTexture(GL_TEXTURE_2D, texs[i]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//拡大・縮小についての設定
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    if (!loadPath(*paths.at(i), data))
+    {
+      exit(2);
+    }
+    stbi_image_free( data);
+  }
+  return texs;
+}
+void deleteTex(int num, GLuint* tex)
+{
+  glDeleteTextures(num, tex);
+}
+void spriteTexture(GLuint id, int x, int y)
+{
+  bind2d(id);
+  glEnable(GL_TEXTURE_2D);
+  //setMask
+  glRasterPos2f(x, y);
+  glScalef(30, 30,1);
+  glBegin(GL_QUADS);
+  // Front Face
+  glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0f, -1.0f);  // Bottom Left Of The Texture and Quad
+  glTexCoord2f(1.0f, 1.0f); glVertex2f( 1.0f, -1.0f);  // Bottom Right Of The Texture and Quad
+  glTexCoord2f(1.0f, 0.0f); glVertex2f( 1.0f,  1.0f);  // Top Right Of The Texture and Quad
+  glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0f,  1.0f);  // Top Left Of The Texture and Quad
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+}
 #define bai 0.9f
 void ver2(float x,float y){
     glVertex3f(x*bai,y*bai,0);
@@ -107,7 +164,6 @@ void Texture::regacyGLTex(float* vs,GLuint texName){
 }
 void latestGLTex(float* vs,GLuint texName){
     //glEnableClientState(GL_VERTEX_ARRAY);
-
     bind2d(texName);
     GLuint ind[]={0,1,2,0,2,3};
     //GLfloat texuv[]={0,0,0,1,1,1,1,0};
@@ -143,9 +199,55 @@ void Texture::BindVert(float* vs){
 
 Texture::~Texture(void)
 {
-    if (obits)
-    {
-	delete[] obits;
-    }
-    glDeleteTextures(1,&texName);
+  if (data) { stbi_image_free( data); data = nullptr; }
+  if (obits)
+  {
+    delete[] obits;
+  }
+  glDeleteTextures(1, &texName);
 }
+#else
+
+GLuint* reserveTexture
+(int num, Paths& paths)
+{
+  return nullptr;
+}
+
+void spriteTexture
+(GLuint id, int x, int y)
+{
+}
+void deleteTex(int num, GLuint* tex)
+{
+
+}
+Texture::Texture() {}
+Texture::~Texture() {}
+bool Texture::LoadShader()
+{
+  return false;
+}
+
+void Texture::regacyGLTex(float*, GLuint)
+{
+  ;
+}
+void Texture::BindVert(float*)
+{
+  ;
+}
+//#define ilist _INITIALIZER_LIST_
+void Texture::SetVertexColor2(float*, float*)
+{
+
+}
+void setBlue()
+{
+
+}
+void setWhite()
+{
+
+}
+#endif

@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "MyContactFilter.h"
 #include "Obstacle.h"
+#include "PhysicSystem.h"
 void collideAndDamage(b2Fixture* f, PSys sys, int32 ind){
   //貫通属性なら消滅までの時間を設定するだけ、みたいなのができる
   auto udata = reinterpret_cast<EnemyData*>(f->GetUserData());
   auto p     = udata->Damage;
-  sys->DestroyParticle(ind);
+  //コンタクト処理が終わらないうちにパーティクルが消えるので問題かも
+  //sys->DestroyParticle(ind);
   *p         = *p + 1;
   if (udata->onhit)udata->onhit();
   
@@ -21,15 +23,19 @@ bool MyContactFilter::ShouldCollide(b2Fixture* f,b2Fixture* ff){
 }
 ///恐らくこの処理のアトコンタクトコールバックを呼び出す
 ////contactCallback使うほうがそれらしいので副作用的な動作は関数に逃がしておいたほうが無難
-bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 a){
+bool MyContactFilter::ShouldCollide(b2Fixture* f, PSys sys, int32 ind){
   //sys->ParticleApplyForce(a,;
 	//return true;
   if ( f->GetUserData() != nullptr ){
-    auto pos = sys->GetPositionBuffer()[a];
+    auto pos = sys->GetPositionBuffer()[ind];
     //sys->SetParticleFlags(a,0);
     if (StoppingFlame == 0)StoppingFlame = 2;
     else StoppingFlame--;
-    collideAndDamage( f , sys , a );
+    auto pudata= reinterpret_cast<ParticleData*>
+      ( sys->GetUserDataBuffer()[ind]);
+    if (!pudata->IsHitEnemy)return false;
+    pudata->IsHitEnemy = false;
+    collideAndDamage( f , sys , ind );
     return true;//壁とは衝突する
   }
   else return true;

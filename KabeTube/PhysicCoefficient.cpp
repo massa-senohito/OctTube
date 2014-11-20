@@ -123,7 +123,13 @@ b2Body* PhysicCoefficient::MakeBody(b2World& w)
   fix ->SetUserData(edata);
   return body;
 }
-b2Fixture* PhysicCoefficient::getFixDef(){
+void PhysicCoefficient::moveFixDef(b2Fixture* otherfix)
+{
+  otherfix= std::move( fix);
+  otherfix->SetUserData(std::move( edata));
+}
+b2Fixture* PhysicCoefficient::getFixDef()
+{
   return fix;
 }
 #define fun std::function

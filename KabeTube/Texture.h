@@ -1,5 +1,15 @@
 #pragma once
-//#include <initializer_list>
+#include <memory>
+
+//#define _TEXTEST
+typedef std::unique_ptr<std::string> Strptr;
+typedef std::vector<Strptr> Paths;
+GLuint* reserveTexture
+  (int num, Paths& paths);
+
+void spriteTexture
+  (GLuint id, int x, int y);
+void deleteTex(int num, GLuint* tex);
 class Texture
 {
   GLuint texName;

@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "TextureTest.h"
+//#define _TEXTEST
+#ifdef _TEXTEST
+#define  STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include "stb_perlin.h"
 #include "DebugLogger.h"
-#define  STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 GLuint*      texture=nullptr;
 DebugLogger& logger = *(new DebugLogger);
 typedef unsigned char  PixData;
@@ -101,13 +103,12 @@ void InitGlut(){
 }
 int InitGL(GLvoid)                      // All Setup For OpenGL Goes Here
 {
-  glEnable    (GL_TEXTURE_2D);              // Enable Texture Mapping ( NEW )
-  glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
-  glClearDepth(1.0f);                   // Depth Buffer Setup
+  //glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
+  //glClearDepth(1.0f);                   // Depth Buffer Setup
   glEnable    (GL_DEPTH_TEST);              // Enables Depth Testing
   glDepthFunc (GL_LEQUAL);               // The Type Of Depth Testing To Do
   glHint      (GL_PERSPECTIVE_CORRECTION_HINT,
-    GL_NICEST);          // Really Nice Perspective Calculations
+    GL_NICEST);          // カラーとテクスチャ座標の補間精度
 
   glEnable(GL_BLEND);
   return TRUE;                          // Initialization Went OK
@@ -121,17 +122,13 @@ TextureTest::TextureTest()
   texture = new GLuint;
   glGenTextures(1, texture);   // Create The Texture
 
-  glBindTexture(GL_TEXTURE_2D, *texture);
+  glBindTexture(GL_TEXTURE_2D, *texture);//バインドすることで以降のTexパラメータが指定できる
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//拡大・縮小についての設定
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  // Typical Texture Generation Using Data From The Bitmap
-  // Generate The Texture
   if (!loadPath("D:\\onD\\OctTWork\\OctTube\\Debug\\tex.png", data)){
     stbi_image_free( data);
     exit(0);
   }
-  //glTexImage2D(GL_TEXTURE_2D, 0, 3, sizeX , sizeY
-  //  , 0, GL_RGB, GL_UNSIGNED_BYTE, pixels->data());
   glutMainLoop();
 
 }
@@ -186,3 +183,13 @@ TextureTest::~TextureTest()
 {
   OnExit();
 }
+#else
+TextureTest::TextureTest()
+{
+
+}
+TextureTest::~TextureTest()
+{
+
+}
+#endif

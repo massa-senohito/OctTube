@@ -10,10 +10,12 @@ void renderVertice(Points ps,int len,int);
 void drawLines(std::function<void(void)> f);
 enum Stages
 {
-  Stage1,Stage1Clear,Stage2,Stage2Clear,Length,
+  Stage1,Stage1Clear,Stage2,Stage2Clear,StagesLength,
 };
 void setPoly(GLint refV);
+void setPolyAlways(GLint refV);
 void setMask(GLint refV);
+bool DrawDebugString(const char* str);
 class Renderer
 {
 public:

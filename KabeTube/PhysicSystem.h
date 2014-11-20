@@ -10,6 +10,20 @@ void makeSinglePar(float x,float y,float vx,float vy);
 typedef float32 f32;
 #define ref /**/
 #define gcnew new
+class ParticleData
+{
+public:
+  bool IsHitEnemy;
+  ParticleData() :IsHitEnemy(true)
+  {
+    ;
+  }
+  ~ParticleData();
+
+private:
+};
+
+int QueryParticlesInAABB(b2AABB& aabb);
 ref class PhysicSystem
 #ifdef _MANAGED
 : IDisposable
@@ -19,6 +33,8 @@ ref class PhysicSystem
   void makeOuterFence(f32,f32);
   void jointDraw();
 public:
+
+  void DeleteAllParticle();
   void DrawDebug();
   int GetStopping();
   void DrawAABB(b2AABB&);

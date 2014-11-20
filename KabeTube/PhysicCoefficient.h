@@ -36,6 +36,7 @@ public:
   void setShape(b2Shape*);
   b2BodyDef* getBodyDef();
   b2Fixture* getFixDef();
+  void moveFixDef(b2Fixture* otherfix);
   void PhysicCoefficient::SetFloat(float,string);
   void PhysicCoefficient::SetInt  (int64,string);
   void PhysicCoefficient::SetString(string, string);
